@@ -7,31 +7,27 @@ A library to make various estimates related mining cryptocurrency including time
 + (difficulty, hash_rate) => estimate time to mine block
 + (difficulty, hash_rate, pool_fees, other_fees) => estimate roi
   + In Estimator.
-- Predict future network hash rate (NHR) and factor that in over a time horizon.
-  - Predict future NHR:
-    - use strategies for prediction of future NHR  
-      - **Strategy**: Avg increase in network hash rate between 30 days and current time (assume it will increase linearly)
-        - Get historical NHR by reading N historical blocks from https://explorer.zcha.in/api (e.g. https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=descending&limit=10&offset=500)
-        - For how ZCash itself estimates hash rate from block info see https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L95 and https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40
-
-      - **Strategy**: Linear regression of last 90 days?
-        - Only legit if last 90 days NHR x time is correlated (would be interesting to fallback to something else if time+NHR): https://simplestatistics.org/docs/#linearregression
-        - https://www.npmjs.com/package/regression
-        - Plot regression: https://stackoverflow.com/questions/20507536/d3-js-linear-regression
-        - psuedo code:
-          blocks = blocksource.fetchWhile(b.date - today < 90)
-          pastDifficulties = blockToBlockNumDiffMapper(blocks)
-          linearRegModel = stats.linear(pastDifficulties)
-          for date in dateIntervalRange(futureDate):
-            futureDifficulties = linearRegModel.predict(dateToBlockNum(date))
-          plot(pastDifficulties + futureDifficulties)
-
++ Predict future network hash rate (NHR) and factor that in over a time horizon.
+  + Predict future NHR:
 - ZCash support
+  - By pulling in chainwork and block time from z.chain api
 - Ethereum Support
 - Bitcoin Support (good for testing and comparing to many other tools out there)
 - BitcoinGold Support
 - Monero Support
 - Ethereum Classic
+- X11/Quark/Qubit/Myriad-Groestl ??
+- Popular ethos coins:
+  |ETH |144  |
+  |null|55   |
+  |ZEC |23   |
+  |ETC |9    |
+  |ETN |9    |
+  |XMR |9    |
+  |ZEN |5    |
+  |BTCZ|5    |
+  |ZCL |4    |
+  |BTG |3    |
 
 
 # References
