@@ -11,11 +11,21 @@ A library to make various estimates related mining cryptocurrency including time
   + Predict future NHR:
 - ZCash support
   - By pulling in chainwork and block time from z.chain api
+  - Mock data for ZChain API
+
 - Ethereum Support
+  - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash
+  - Difficulty is stored in block as "hashes" such that hashes/seconds == hashs per second hashrate - https://ethereum.stackexchange.com/questions/29784/what-is-the-unit-for-measuring-difficulty
+- Ethereum Classic
 - Bitcoin Support (good for testing and comparing to many other tools out there)
 - BitcoinGold Support
 - Monero Support
-- Ethereum Classic
+  - Note no chainWork: https://getmonero.org/resources/developer-guides/daemon-rpc.html#getlastblockheader
+    - This is perfectly fine since we only care about the relative change in chainWork between two blocks. So we can read a subset of the block chain to determine this. Just start the first one with chainWork=difficulty
+    - NOTE: Monero calculates difficulty for each block based on the most recent 720 blocks existing difficulty and block time.
+  - Difficulty calculations in tests at https://github.com/monero-project/monero/tree/36241552b56b156c08319935baf7afda12deb3c5/tests/difficulty
+  - Actuall difficulty calc: https://github.com/monero-project/monero/blob/36241552b56b156c08319935baf7afda12deb3c5/src/cryptonote_basic/difficulty.cpp called by difficulty_type Blockchain::get_difficulty_for_next_block(): https://github.com/monero-project/monero/blob/36241552b56b156c08319935baf7afda12deb3c5/src/cryptonote_core/blockchain.cpp#L741 WHICH calls 
+
 - X11/Quark/Qubit/Myriad-Groestl ??
 - Popular ethos coins:
   |ETH |144  |

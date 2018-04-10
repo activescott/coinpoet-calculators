@@ -1,6 +1,9 @@
 import { BitcoinDifficulty } from './BitcoinDifficulty'
 import * as _ from 'lodash'
+import { BigNumber } from 'bignumber.js'
 import Diag from './Diag'
+import { BlockWithNetworkHashRate, BlockWithChainWork, BlockchainReader } from './interfaces'
+import ZCashBlockchainReader from './blockchains/ZCashBlockchainReader'
 
 const D = new Diag('Estimator')
 
@@ -13,15 +16,15 @@ export class Estimator {
    * Estimates the earnings for the given hash rate and given network information for a single day.
    * Essentially this is the same as `estimateNetworkHashRateChangePerDay` but for a single day.
    */
-  static dailyEarnings (yourHashesPerSecond: number,
-                  networkHashesPerSecond: number,
+  static dailyEarnings (yourHashesPerSecond: BigNumber,
+                  networkHashesPerSecond: BigNumber,
                   meanNetworkSecondsBetweenBlocks: number,
                   rewardedCoinsPerMinedBlock: number,
                   fiatPerCoinsExchangeRate: number,
                   watts: number = 0,
                   electricityCostKwh: number = 0,
                   feesAsPercent: number = 0) {
-    let days = Estimator.estimateFutureEarnings(1, 0, yourHashesPerSecond, networkHashesPerSecond, meanNetworkSecondsBetweenBlocks, rewardedCoinsPerMinedBlock, fiatPerCoinsExchangeRate, watts, electricityCostKwh, feesAsPercent)
+    let days = Estimator.estimateFutureEarnings(1, new BigNumber(0), yourHashesPerSecond, networkHashesPerSecond, meanNetworkSecondsBetweenBlocks, rewardedCoinsPerMinedBlock, fiatPerCoinsExchangeRate, watts, electricityCostKwh, feesAsPercent)
     return _.size(days) > 0 && _.has(days[0], 'totalProfit') ? days[0].totalProfit : 0
   }
 
@@ -40,9 +43,9 @@ export class Estimator {
    * @param feesAsPercent Any other fees you want to take off the top of generated revenue (e.g. pool fees + mining software fees). Expressed as a percentage (between 0 and 1).
    */
   static estimateFutureEarnings (timeHorizonInDays: number,
-    networkHashRateChangePerDay: number,
-    yourHashesPerSecond: number,
-    networkHashesPerSecond: number,
+    networkHashRateChangePerDay: BigNumber,
+    yourHashesPerSecond: BigNumber,
+    networkHashesPerSecond: BigNumber,
     meanNetworkSecondsBetweenBlocks: number,
     rewardedCoinsPerMinedBlock: number,
     fiatPerCoinsExchangeRate: number,
@@ -57,8 +60,8 @@ export class Estimator {
       let totalProfit = 0
       let days = []
       for (let dayNum = 0; dayNum < timeHorizonInDays; dayNum++) {
-        let daysToMineBlock = (meanNetworkSecondsBetweenBlocks / (yourHashesPerSecond / networkHashesPerSecond)) / SECONDS_PER_DAY
-        let blocksPerDay = 1.0 / daysToMineBlock
+        let daysToMineBlock = new BigNumber(meanNetworkSecondsBetweenBlocks).dividedBy(yourHashesPerSecond.dividedBy(networkHashesPerSecond)).dividedBy(SECONDS_PER_DAY)
+        let blocksPerDay = new BigNumber(1.0).dividedBy(daysToMineBlock).toNumber()
 
         let revenue = (blocksPerDay * rewardedCoinsPerMinedBlock * fiatPerCoinsExchangeRate)
         totalRevenue += revenue
@@ -85,21 +88,23 @@ export class Estimator {
           totalProfit
         }
         days.push(dayStats)
-        networkHashesPerSecond += networkHashRateChangePerDay
+        networkHashesPerSecond.plus(networkHashRateChangePerDay)
       }
       return days
   }
 
   /**
    * Estimates the network hash rate at one block (`newBlock`) by the amount of work accomplished between two blocks.
+   * Note that for blockchains without a chainWork stored in every block, since this calculation only uses the 
+   * *relative* difference in chainWork, the caller can calculate a chainWork for part of the chain to satisfy this function's requirements.
    * @param oldBlock The oldest block.
    * @param newBlock The newest block; The network hashrate will be estimated at the time of this block.
    * @returns The estimated network hash rate
    */
-  static estimateNetworkHashRate (oldBlock: BlockWithChainWork, newBlock: BlockWithChainWork) {
-    let workDiff = newBlock.chainWork - oldBlock.chainWork
-    let elapsedSeconds = newBlock.time - oldBlock.time
-    let estimatedNetworkHashRate = workDiff / elapsedSeconds
+  static estimateNetworkHashRate (oldBlock: BlockWithChainWork, newBlock: BlockWithChainWork): BigNumber {
+    let workDiff = newBlock.chainWork.minus(oldBlock.chainWork)
+    let elapsedSeconds = newBlock.timestamp - oldBlock.timestamp
+    let estimatedNetworkHashRate = workDiff.dividedBy(elapsedSeconds)
     return estimatedNetworkHashRate
   }
 
@@ -107,33 +112,35 @@ export class Estimator {
    * Estimates the daily change in network solutions/hashes per second based on historical data.
    * The historical data is really two attributes of two historical blocks. 
    * The two blocks chosen should be the one at the beginning of the historical period you want to evaluate hash rate increase based on.
-   * For example, if you wanted to use 30 day period to assess the daily hash rate change from, you'd choose a block at the begining of a thirty day period and a block at the end of that 30 day period.
-   * The two attribures are:
-   * * chain work: The estimated number of block header hashes miners had to check from the genesis block to this block.
-   * * chain work time: The timestamp (seconds since 1970-01-01T00:00 UTC).
-   * Both chain work (`chainwork`) and chain work time (`time`) are encoded in a bitcoin block and most other blocks.
-   * @param oldChainWork 
+   * For example, if you wanted to use 30 day period to assess the daily hash rate change from, you'd choose a block at the beginning of a thirty day period and a block at the end of that 30 day period.
    */
-  static estimateDailyChangeInNetworkHashRate (oldBlock: BlockWithNetworkHashRate, newBlock: BlockWithNetworkHashRate) {
+  static estimateDailyChangeInNetworkHashRate (oldBlock: BlockWithNetworkHashRate, newBlock: BlockWithNetworkHashRate): BigNumber {
     // For how ZCash itself estimates hash rate from block info see https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L95 and https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40
     // For explanation of chainWork: https://bitcoin.stackexchange.com/a/26894/6435
     const SECONDS_PER_DAY = 24 * 60 * 60
-    let periodInDays = (newBlock.time - oldBlock.time) / SECONDS_PER_DAY
-    let changeInHasRatePS = newBlock.networkHashRate - oldBlock.networkHashRate
-    return changeInHasRatePS / periodInDays
+    let periodInDays = (newBlock.timestamp - oldBlock.timestamp) / SECONDS_PER_DAY
+    let changeInHasRatePS = newBlock.networkHashRate.minus(oldBlock.networkHashRate)
+    return changeInHasRatePS.dividedBy(periodInDays)
   }
-}
 
-export interface BlockWithChainWork {
-  /** The estimated number of block header hashes miners had to check from the genesis block to this block. */
-  chainWork: number
-  /** Block timestamp (seconds since 1970-01-01T00:00 UTC). */
-  time: number
-}
+  static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date) {
+    let fromSeconds = from.valueOf() / 1000
+    let toSeconds = from.valueOf() / 1000
+    /* alg:
+     * get most recent block; if latest block.timestamp is < from throw;
+     * now iterate through earlier blocks until a block earlier than "to" is found.
+     * with blocks in hand, call estimateDailyChangeInNetworkHash
+     */
+    let blockReader = new ZCashBlockchainReader()
+    // todo: considering pushing the latest block check into the reader?
+    let latestBlock = await blockReader.newestBlock()
+    if (latestBlock.timestamp < fromSeconds)
+      throw new Error('from date is in future')
+    /* TODO: should reader implementations be required to provide chainWork? Or should they just provide difficulty, time, and a prev pointer and use another implementation to add chainWork (relative chainWork like will be required for monero)?
+     * Let the reader impl decide. Just provide a helper mapper to add chainWork (relative) as needed if the reader needs it. At a minimum readers must provide difficulty+time+prev
+    */
+    throw new Error('TODO')
+    let blocks = await blockReader.slice(from, to)
 
-export interface BlockWithNetworkHashRate {
-  /** The network hash rate at the time this block was mined. */
-  networkHashRate: number
-  /** Block timestamp (seconds since 1970-01-01T00:00 UTC). */
-  time: number
+  }
 }

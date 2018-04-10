@@ -8,7 +8,7 @@ export enum LogLevel {
 
 export default class Diag {
   private _prefix: string
-  public static Level: LogLevel = LogLevel.INFO
+  public static Level: LogLevel = LogLevel.WARN
 
   constructor (prefix) {
     this._prefix = prefix
