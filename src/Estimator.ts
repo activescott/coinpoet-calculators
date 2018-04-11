@@ -124,23 +124,19 @@ export class Estimator {
   }
 
   static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date) {
-    let fromSeconds = from.valueOf() / 1000
-    let toSeconds = from.valueOf() / 1000
+    const fromSeconds = from.valueOf() / 1000
     /* alg:
      * get most recent block; if latest block.timestamp is < from throw;
      * now iterate through earlier blocks until a block earlier than "to" is found.
+     * then add networkHashRate to each of these blocks (will again require a handful of prior blocks to each - this will require going through the reader to make sure that those blocks are read!)
      * with blocks in hand, call estimateDailyChangeInNetworkHash
      */
-    let blockReader = new ZCashBlockchainReader()
-    // todo: considering pushing the latest block check into the reader?
-    let latestBlock = await blockReader.newestBlock()
-    if (latestBlock.timestamp < fromSeconds)
-      throw new Error('from date is in future')
-    /* TODO: should reader implementations be required to provide chainWork? Or should they just provide difficulty, time, and a prev pointer and use another implementation to add chainWork (relative chainWork like will be required for monero)?
-     * Let the reader impl decide. Just provide a helper mapper to add chainWork (relative) as needed if the reader needs it. At a minimum readers must provide difficulty+time+prev
-    */
-    throw new Error('TODO')
-    let blocks = await blockReader.slice(from, to)
-
+    let reader = new ZCashBlockchainReader()
+    // put this in ZCAShBlockchainReader tests:
+    //if ((newest.timestamp < fromSeconds)
+    //  throw new Error('newest block is before specified period')
+    let chain = reader.subset(from, to)
+    reader.subsetByIndex(from, 100)
+    
   }
 }

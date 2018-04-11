@@ -4,6 +4,7 @@ import { BigNumber } from 'bignumber.js'
  * The root of the block type system. Every block has a time at the very least.
  */
 export interface Block {
+  readonly hash: string
   /** Block timestamp (seconds since 1970-01-01T00:00 UTC). */
   readonly timestamp: number
 }
@@ -21,11 +22,7 @@ export interface BlockWithNetworkHashRate extends Block {
   networkHashRate: BigNumber
 }
 
-export interface BlockWithChain<TBlock extends Block> extends Block {
-  readonly previous: TBlock
-}
-
-export interface BlockchainReader<TBlock extends BlockWithChain<TBlock>> {
+export interface BlockchainReader<TBlock extends BlockWithChainWork> {
   /** The most recently mined block available on the blockchain. */
   newestBlock (): Promise<TBlock>
   
@@ -39,13 +36,21 @@ export interface BlockchainReader<TBlock extends BlockWithChain<TBlock>> {
    * - If no block existed at `oldestBlockTime` the genesis block will be returned.
    */
   subset (oldestBlockTime: Date, newestBlockTime: Date): Promise<Chain<TBlock>>
+
+  /**
+   * Returns an array of ancestor blocks before the specified block the chain.
+   * Use this method to get the previous blocks so that the reader can lazily load blocks.
+   * @param block The block to get the previous blocks to.
+   * @param count Indicates the number of blocks to read.
+   */
+  ancestors (block: TBlock, count: number): Promise<TBlock[]>
 }
 
 /**
  * Represents block chain providing the newest and oldest blocks in the chain.
  * Use oldest.previous to iterate through the chain.
  */
-export interface Chain<TBlock extends BlockWithChain<TBlock>> {
+export interface Chain<TBlock extends BlockWithChainWork> {
   newestBlock: TBlock
   oldestBlock: TBlock
 }

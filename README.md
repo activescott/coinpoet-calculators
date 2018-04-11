@@ -9,9 +9,11 @@ A library to make various estimates related mining cryptocurrency including time
   + In Estimator.
 + Predict future network hash rate (NHR) and factor that in over a time horizon.
   + Predict future NHR:
-- ZCash support
+- ZCash support for estimation
   - By pulling in chainwork and block time from z.chain api
-  - Mock data for ZChain API
+    - GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 17 blocks)
+  + Mock data for ZChain API
+  - impl and test Estimator.estimateDailyChangeInNetworkHashRateZCash
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash

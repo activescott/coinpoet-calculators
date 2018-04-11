@@ -25,7 +25,7 @@ export default class MockFetch {
     D.debug('Using localDir:', this.localDir)
   }
   
-  async fetch (input: any, init?: any): Promise<Response> {
+  async fetch (input: any, init?: any): Promise<FetchResponse> {
     // D.debug('Mapping', input, 'to...')
     let dir = this.urlMapper(input)
     // D.debug('...', input, '.')
@@ -52,7 +52,7 @@ export default class MockFetch {
   }
 }
 
-class ResponseImpl implements Response {
+class ResponseImpl implements FetchResponse {
   readonly localPath: string
 
   constructor (localPath) {
@@ -71,7 +71,7 @@ class ResponseImpl implements Response {
   }
 }
 
-export interface Response {
+interface FetchResponse {
   readonly ok: boolean
   json(): Promise<any>
 }
