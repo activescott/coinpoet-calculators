@@ -110,6 +110,10 @@ export default class ZCashBlockchainReader implements BlockchainReader<BlockWith
     const res = await ServiceProvder.Fetch(`https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=descending&limit=20&offset=${this._apiOffset}`)
     let blocks = await res.json()
     D.debug('Offset', this._apiOffset, 'fetched. Read', _.size(blocks), 'blocks.')
+    if (blocks == null) {
+      // we've read past the oldest/genesis block. So just indicate nothing more to read.
+      return 0
+    }
     if (!_.isArray(blocks)) {
       throw new Error(`Expected blocks from API to be a JSON array but was ${JSON.stringify(blocks)}`)
     }

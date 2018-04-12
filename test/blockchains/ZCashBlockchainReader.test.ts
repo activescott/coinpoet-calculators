@@ -32,8 +32,13 @@ describe('ZCashBlockchainReader', function () {
       expect(chain.newestBlock).to.have.property('height', testNewestBlock.height, 'newestBlock height')
     })
 
-    it.skip('should read to genesis block', async function () {
+    it('should read to genesis block', async function () {
       //NOTE: offset=100.json is a null response which api.zcha.in does in the event of an offset that is before the beginning of the chain
+      let reader = new ZCashBlockchainReader()
+      // deliberately old date will require reading to genesis/oldest block:
+      let chain = await reader.subset(new Date(1900, 1, 1), new Date())
+      // in our test data oldest block isn't that old: 00000000025e82cc6ebecd95c42633e7776675b3200958c367f18277b159e3cb
+      expect(chain.oldestBlock).has.property('hash', '00000000025e82cc6ebecd95c42633e7776675b3200958c367f18277b159e3cb')
     })
 
     it.skip('should work with start time after block\'s time, end time before end block\'s time', async function () {
