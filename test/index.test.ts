@@ -1,5 +1,6 @@
 import * as path from 'path'
 import { URL } from 'url'
+import * as _ from 'lodash'
 import ServiceProvider from '../src/ServiceProvider'
 import MockFetch from '../test-tools/MockFetch'
 
@@ -13,10 +14,3 @@ function localDirMapper (urlInput) {
 }
 
 ServiceProvider.Fetch = buildFetchMock()
-
-async function OVERWRITE_TEST_DATA() {
-  // BE CAREFUL THIS OVERWRITES TEST DATA
-  let fetcher = new MockFetch(path.resolve('test-data/zcash-blocks'), localDirMapper)
-  let urls = [0, 20, 40, 60, 80].map(n => `https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=descending&limit=20&offset=${n}`)
-  return fetcher.createMockData(urls)
-}

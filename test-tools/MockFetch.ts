@@ -42,10 +42,17 @@ export default class MockFetch {
    */
   async createMockData (fromUrls: string[]) {
     console.log('writing test data')
-    let promises = _.map(fromUrls, async url => {
+    // respect 10rps:
+    const MAXRPS = 8
+    const interval = 1000 / MAXRPS
+    let delay = 0
+    let promises = BbPromise.map(fromUrls, async url => {
+      await BbPromise.delay(delay += interval)
+      console.log('url:', url)
       let response = await _realFetch(url)
       let dir = this.urlMapper(url)
       let dest = path.join(this.localDir, dir)
+      console.log('writing response to', dest)
       return fs.writeFileAsync(dest, await response.text())
     })
     return await BbPromise.all(promises)
