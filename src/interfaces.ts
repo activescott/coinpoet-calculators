@@ -1,56 +1,75 @@
 import { BigNumber } from 'bignumber.js'
 
 /**
- * The root of the block type system. Every block has a time at the very least.
+ * The root of the block type system.
  */
 export interface Block {
   readonly hash: string
+  readonly height: number
   /** Block timestamp (seconds since 1970-01-01T00:00 UTC). */
-  readonly timestamp: number
-}
-
-export interface BlockWithChainWork extends Block {
+  readonly time: number
+  readonly previousBlockHash: string
   /** The estimated number of block header hashes/solutions miners had to attempt from the genesis block to this block. */
   readonly chainWork: BigNumber
+  /** Returns the previous block in the chain. */
+  previous (): Promise<Block>
 }
 
 /**
- * Can be derived from a BlockWithChainWork via `Estimator.estimateNetworkHashRate`.
+ * Can be derived from a Block via `Estimator.estimateNetworkHashRate`.
  */
 export interface BlockWithNetworkHashRate extends Block {
   /** The network hash rate at the time this block was mined. */
   networkHashRate: BigNumber
 }
 
-export interface BlockchainReader<TBlock extends BlockWithChainWork> {
-  /** The most recently mined block available on the blockchain. */
-  newestBlock (): Promise<TBlock>
-  
+/**
+ * Provides blocks from the best chain in a storage.
+ */
+export abstract class BlockStorage<TBlock extends Block> {
   /**
-   * Returns a subset of a blockchain.
-   * @param newestBlockTime The time of the newest block. 
-   * - The newest block in the returned chain will be the earliest/oldest block existed at `newestBlockTime`.
-   * - If no block yet exists at this time, then the newest possible block is returned.
-   * @param oldestBlockTime The time that the oldest block in the return chained should be returned for.
-   * - The oldest block in the returned chain will be the earliest/oldest block that existed at `oldestBlockTime`.
-   * - If no block existed at `oldestBlockTime` the genesis block will be returned.
+   * For a chain with only the hard-coded genesis block, this number will be 0.
+   * For the first mined block, it will be 1.
    */
-  subset (oldestBlockTime: Date, newestBlockTime: Date): Promise<Chain<TBlock>>
+  abstract async getBlockCount (): Promise<number>
 
   /**
-   * Returns an array of ancestor blocks before the specified block the chain.
-   * Use this method to get the previous blocks so that the reader can lazily load blocks.
-   * @param block The block to get the previous blocks to.
-   * @param count Indicates the number of blocks to read.
+   * Returns the hash of a block at the given height in the best block chain.
+   * @param height {number} The height of the block whose hash is to be returned.
    */
-  ancestors (block: TBlock, count: number): Promise<TBlock[]>
+  abstract async getBlockHash (height: number): Promise<string>
+
+  /**
+   * Returns the block with the given header hash from the blockchain.
+   * @param blockHash {string} The hash of the block to be returned.
+   */
+  abstract async getBlock (blockHash: string): Promise<TBlock>
+  /**
+   * Returns a block at the given height in the local best block chain.
+   * @param height {number} The height of the block to be returned.
+   */
+  async getBlockFromHeight (height: number): Promise<TBlock> {
+    let hash
+    try {
+      hash = await this.getBlockHash(height)
+    } catch (err) {
+      throw new Error(`An error occured retrieving hash for block height ${height}:` + err.message)
+    }
+    if (!hash)
+      throw new Error(`A block for height ${height} was not found.`)
+    try {
+      return this.getBlock(hash)
+    } catch (err) {
+      throw new Error(`An error occured retrieving block for block height ${height}:` + err.message)
+    }
+  }
 }
 
 /**
  * Represents block chain providing the newest and oldest blocks in the chain.
  * Use oldest.previous to iterate through the chain.
  */
-export interface Chain<TBlock extends BlockWithChainWork> {
-  newestBlock: TBlock
-  oldestBlock: TBlock
+export class Chain<TBlock extends Block> {
+  constructor (readonly oldestBlock: TBlock, readonly newestBlock: TBlock) {
+  }
 }

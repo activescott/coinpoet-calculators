@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "test-data/zcash-blocks/**": true
+  },
+  "cSpell.words": [
+    "bsfs"
+  ]
+}

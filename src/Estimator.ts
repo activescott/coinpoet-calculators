@@ -2,8 +2,11 @@ import { BitcoinDifficulty } from './BitcoinDifficulty'
 import * as _ from 'lodash'
 import { BigNumber } from 'bignumber.js'
 import Diag from './Diag'
-import { BlockWithNetworkHashRate, BlockWithChainWork, BlockchainReader } from './interfaces'
-import ZCashBlockchainReader from './blockchains/ZCashBlockchainReader'
+import { BlockWithNetworkHashRate, Block } from './interfaces'
+import BlockchainReader from './blockchains/BlockchainReader'
+import BlockStorageFileSystem from './blockchains/BlockStorageFileSystem'
+import * as path from 'path'
+
 
 const D = new Diag('Estimator')
 
@@ -97,15 +100,39 @@ export class Estimator {
    * Estimates the network hash rate at one block (`newBlock`) by the amount of work accomplished between two blocks.
    * Note that for blockchains without a chainWork stored in every block, since this calculation only uses the 
    * *relative* difference in chainWork, the caller can calculate a chainWork for part of the chain to satisfy this function's requirements.
-   * @param oldBlock The oldest block.
    * @param newBlock The newest block; The network hashrate will be estimated at the time of this block.
    * @returns The estimated network hash rate
    */
-  static estimateNetworkHashRate (oldBlock: BlockWithChainWork, newBlock: BlockWithChainWork): BigNumber {
-    let workDiff = newBlock.chainWork.minus(oldBlock.chainWork)
-    let elapsedSeconds = newBlock.timestamp - oldBlock.timestamp
-    let estimatedNetworkHashRate = workDiff.dividedBy(elapsedSeconds)
+  static async estimateNetworkHashRate (newBlock: Block, lookbackCount: number = 120): Promise<BigNumber> {
+    if (!newBlock) throw new Error('newBlock cannot be null')
+    let b0 = newBlock
+    let minTime: number = b0.time
+    let maxTime = minTime
+    while (lookbackCount > 0 && b0) {
+      b0 = await b0.previous()
+      minTime = Math.min(b0.time, minTime)
+      maxTime = Math.max(b0.time, maxTime)
+      lookbackCount--
+    }
+    if (minTime == maxTime)
+      return new BigNumber(0)
+    let workDiff = newBlock.chainWork.minus(b0.chainWork)
+    let timeDiff = maxTime - minTime
+    let estimatedNetworkHashRate = workDiff.dividedBy(timeDiff)
     return estimatedNetworkHashRate
+  }
+
+  /**
+   * Returns a clone of the specified with the `networkHashRate` property added.
+   * @param block A block to add hashrate to.
+   * @param reader A reader for the speicifed block to get additional block chain info from.
+   */
+  static async blockWithNetworkHashRate (block: Block, reader: BlockchainReader): Promise<BlockWithNetworkHashRate> {
+    let hashRate = await Estimator.estimateNetworkHashRate(block)
+    //let clone = Object.assign(block, { networkHashRate: hashRate })
+    block['networkHashRate'] = hashRate
+    //return (clone as BlockWithNetworkHashRate)
+    return (block as BlockWithNetworkHashRate)
   }
 
   /**
@@ -115,28 +142,19 @@ export class Estimator {
    * For example, if you wanted to use 30 day period to assess the daily hash rate change from, you'd choose a block at the beginning of a thirty day period and a block at the end of that 30 day period.
    */
   static estimateDailyChangeInNetworkHashRate (oldBlock: BlockWithNetworkHashRate, newBlock: BlockWithNetworkHashRate): BigNumber {
-    // For how ZCash itself estimates hash rate from block info see https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L95 and https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40
-    // For explanation of chainWork: https://bitcoin.stackexchange.com/a/26894/6435
     const SECONDS_PER_DAY = 24 * 60 * 60
-    let periodInDays = (newBlock.timestamp - oldBlock.timestamp) / SECONDS_PER_DAY
+    let periodInDays = (newBlock.time - oldBlock.time) / SECONDS_PER_DAY
     let changeInHasRatePS = newBlock.networkHashRate.minus(oldBlock.networkHashRate)
-    return changeInHasRatePS.dividedBy(periodInDays)
+    return changeInHasRatePS.dividedBy(periodInDays.toFixed(4)) // Because BigNumber throws if >15 significant digits
   }
 
-  static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date) {
-    const fromSeconds = from.valueOf() / 1000
-    /* alg:
-     * get most recent block; if latest block.timestamp is < from throw;
-     * now iterate through earlier blocks until a block earlier than "to" is found.
-     * then add networkHashRate to each of these blocks (will again require a handful of prior blocks to each - this will require going through the reader to make sure that those blocks are read!)
-     * with blocks in hand, call estimateDailyChangeInNetworkHash
-     */
-    let reader = new ZCashBlockchainReader()
-    // put this in ZCAShBlockchainReader tests:
-    //if ((newest.timestamp < fromSeconds)
-    //  throw new Error('newest block is before specified period')
-    let chain = reader.subset(from, to)
-    reader.subsetByIndex(from, 100)
-    
+  static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date): Promise<BigNumber> {
+    let reader = new BlockchainReader(new BlockStorageFileSystem(path.resolve(__dirname, '../test-data/zcash-blocks/by-height')))
+    let chain = await reader.subset(from, to)
+    // get hashrate for "from" block:
+    let fromBlock = await Estimator.blockWithNetworkHashRate(chain.oldestBlock, reader)
+    // get hashrate for "to" block:
+    let toBlock = await Estimator.blockWithNetworkHashRate(chain.newestBlock, reader)    
+    return Estimator.estimateDailyChangeInNetworkHashRate(fromBlock, toBlock)
   }
 }

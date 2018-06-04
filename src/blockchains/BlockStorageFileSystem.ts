@@ -1,0 +1,99 @@
+import * as BbPromise from 'bluebird'
+import * as _fs from 'fs'
+import * as path from 'path'
+import * as _ from 'lodash'
+import { BigNumber } from 'bignumber.js'
+import { BlockStorage, Block } from "../interfaces"
+import Diag from '../Diag'
+
+const fs: any = BbPromise.promisifyAll(_fs)
+const D = new Diag('BlockStorageFileSystem')
+
+export default class BlockStorageFileSystem extends BlockStorage<Block> {
+  /**
+   * Creates a new instance of @see BlockStorageFileSystem.
+   * The directory should contain files named like <height>.json where <height> is the height of the block and the file contains the header for that block as JSON.
+   * @param dirPath {string} The path to the directory containing the blocks.
+   */
+  constructor (readonly dirPath: string) {
+    super()
+    if (!fs.existsSync(dirPath))
+      throw new Error(`The path ${dirPath} does not exist.`)
+    D.debug('using path:', this.dirPath)
+  }
+
+  async getBlockCount(): Promise<number> {
+    const files = await fs.readdirAsync(this.dirPath)
+    let m = _(files).map(f => Number.parseInt(path.basename(f, '.json'))).max()
+    return m + 1
+  }
+
+  async getBlockHash(height: number): Promise<string> {
+    let b = await this.loadBlockFile(height)
+    return b.hash
+   }
+
+  async getBlock(blockHash: string): Promise<Block> {
+    let height = await this.lookupHeightFromHash(blockHash)
+    if (height !== 0 && !height)
+      throw new Error(`Block hash '${blockHash}' not found.`)
+    return this.loadBlockFile(height)
+  }
+
+  private async lookupHeightFromHash (blockHash: string): Promise<number> {
+    const indexDir = path.join(this.dirPath, 'blockhash-to-height-index')
+    const filePath = path.join(indexDir, blockHash)
+    let str
+    try {
+      str = await fs.readFileAsync(filePath)
+    } catch (err) {
+      D.error(`Error reading hash index file ${filePath}: ${err.message}`)
+      throw err
+    }
+    let num
+    try {
+      num = Number.parseInt(str)
+    } catch (err) {
+      throw new Error(`Error parsing height ${str} as a number.`)
+    }
+    return num
+  }
+
+  private async loadBlockFile (height: number): Promise<Block> {
+    const filePath = path.join(this.dirPath, height.toString() + '.json')
+    let str
+    try {
+      str = await fs.readFileAsync(filePath)
+    } catch (err) {
+      D.error(`Error reading file ${filePath}: ${err.message}`)
+      throw err
+    }
+    let json
+    try {
+      json = JSON.parse(str)
+    } catch (err) {
+      D.error(`Error parsing json in file ${filePath}: ${err.message}`)
+      throw err
+    }
+    return Promise.resolve(new BlockStorageBlock(this, json))
+  }
+}
+
+class BlockStorageBlock implements Block {
+  constructor (readonly owningStorage: BlockStorage<Block>, blockJson: any) {
+    this.hash = blockJson.hash
+    this.height = blockJson.height
+    this.time = blockJson.time
+    this.previousBlockHash = blockJson.previousblockhash
+    this.chainWork = new BigNumber('0x' + blockJson.chainwork)
+  }
+  readonly hash: string
+  readonly height: number
+  readonly time: number
+  readonly previousBlockHash: string
+  readonly chainWork: BigNumber
+  previous(): Promise<Block> {
+    if (this.height == 0 || (!this.previousBlockHash)) return null
+    return this.owningStorage.getBlock(this.previousBlockHash)
+  }
+}

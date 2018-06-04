@@ -1,12 +1,25 @@
 /* eslint-env mocha */
+import * as path from 'path'
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import * as _ from 'lodash'
 import { BigNumber } from 'bignumber.js'
-
+import { Block } from '../src/interfaces'
 import { Estimator } from '../src/Estimator'
+import BlockStorageFileSystem from '../src/blockchains/BlockStorageFileSystem'
+
 
 describe('Estimator', function () {
+  let sandbox: sinon.SinonSandbox
+
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create()
+  })
+
+  afterEach(() => {
+    sandbox.restore()
+    sandbox = null
+  })
 
   describe('dailyEarnings', function () {
     it('network hash and time based', function () {
@@ -43,36 +56,25 @@ describe('Estimator', function () {
   })
 
   describe('estimateDailyChangeInNetworkHashRate', function () {
-    it('estimateNetworkHashRate', function () {
-      // https://blockchain.info/charts/hash-rate?timespan=180days&showDataPoints=true
-      /*
-       * 3/18/18 17:00: 26,279,607 TH/s = 26279607 * 10^12 H/s
-       * 
-       */
-      // https://api.blockchair.com/bitcoin/blocks?q=id(509787)
-      let b1 = {
-        chainWork: new BigNumber('0x0000000000000000000000000000000000000000011d35499c9e9979caca8fa0'),
-        timestamp: new Date(2018, 2, 18, 15, 58, 21).valueOf() / 1000
-      }
-      // https://api.blockchair.com/bitcoin/blocks?q=id(514111)
-      let b2 = {
-        chainWork: new BigNumber('0x0000000000000000000000000000000000000000014d5da4cf638ba718fafa60'),
-        timestamp: new Date(2018, 3, 18, 16, 50, 46).valueOf() / 1000
-      }
-     
-      let val = Estimator.estimateNetworkHashRate(b1, b2)
-      // in fact it was estimated as actually to be 26279607000000000000 at that time by https://blockchain.info/charts/hash-rate?timespan=180days&showDataPoints=true, but I presume they use a different number of prior blocks to estimate it (or a different algorithm altogether) but we're in the ballpark
-      expect(val.toFixed(0)).to.equal('21710997321634642527')
+    it('estimateNetworkHashRate', async function () {
+      let bs = new BlockStorageFileSystem(path.resolve(__dirname, '../test-data/zcash-blocks/by-height'))
+      let testBlock = await bs.getBlockFromHeight(334000)
+      let val = await Estimator.estimateNetworkHashRate(testBlock, 120)
+      console.log('val:', val.toFixed(0))
+      // expected value comes from `docker exec zc ./src/zcash-cli getnetworkhashps 120 334000` on a zcash full node
+      expect(val.toNumber()).to.be.closeTo(507644980, 1)
     })
 
     it('estimateDailyChangeInNetworkHashRate 1 day', function () {
       let newBlock = { 
+        hash: 'newblock',
         networkHashRate: new BigNumber(26679207 * 10**12),
-        timestamp: new Date(2018, 3, 18, 17).valueOf() / 1000
+        time: new Date(2018, 3, 18, 17).valueOf() / 1000
       }
       let oldBlock = { 
+        hash: 'oldblock',
         networkHashRate: new BigNumber(25990711 * 10**12),
-        timestamp: new Date(2018, 3, 17, 17).valueOf() / 1000
+        time: new Date(2018, 3, 17, 17).valueOf() / 1000
       }
      
       let val = Estimator.estimateDailyChangeInNetworkHashRate(oldBlock, newBlock)
@@ -81,13 +83,17 @@ describe('Estimator', function () {
     })
 
     it('estimateDailyChangeInNetworkHashRate 30 days', function () {
-      let newBlock = { 
+      let newBlock = {
+        hash: 'newblock',
+        height: 0,
         networkHashRate: new BigNumber(26679207 * 10**12),
-        timestamp: new Date(2018, 4, 18, 17).valueOf() / 1000
+        time: new Date(2018, 4, 18, 17).valueOf() / 1000
       }
       let oldBlock = { 
+        hash: 'oldblock',
+        height: 0,
         networkHashRate: new BigNumber(25990711 * 10**12),
-        timestamp: new Date(2018, 3, 17, 17).valueOf() / 1000
+        time: new Date(2018, 3, 17, 17).valueOf() / 1000
       }
      
       let val = Estimator.estimateDailyChangeInNetworkHashRate(oldBlock, newBlock)
@@ -97,25 +103,19 @@ describe('Estimator', function () {
   })
 
   describe('estimate zcash', function () {
-    it('estimateNetworkHashRateZCash', function () {
+    it('estimateNetworkHashRateZCash', async function () {
       let from = new Date(2018, 1, 1)
       let to = new Date(2018, 3, 1)
 
-      let val = Estimator.estimateDailyChangeInNetworkHashRateZCash(from, to)
-      expect(val).to.have.length(60)
-      expect(val[_.size(val) - 1]).to.equal(1.5)
-
-      throw 'todo'
+      let val = await Estimator.estimateDailyChangeInNetworkHashRateZCash(from, to)
+      let valThs = val.dividedBy(10**12).toNumber()
+      let valMhs = val.dividedBy(10**9).toNumber()
+      console.log('valThs:', valThs.toFixed(4))
+      console.log('valMhs:', valMhs.toFixed(4))
+      console.log('valHs:', val.toFixed(4))
+      //NOTE: expected is not based on an independent reference. just using it to know if the calc changes.
+      let expected = 2095695.6812251646
+      expect(val.toNumber()).to.be.closeTo(expected, 1)
     })
-
-    it('estimateEarningsZCash', function () {
-      let from = new Date(2018, 1, 1)
-      let to = new Date(2018, 3, 1)
-
-      let val = Estimator.estimateEarningsZCash(from, to)
-
-      throw 'todo'
-    })
-
   })
 })

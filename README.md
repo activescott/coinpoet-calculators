@@ -9,11 +9,36 @@ A library to make various estimates related mining cryptocurrency including time
   + In Estimator.
 + Predict future network hash rate (NHR) and factor that in over a time horizon.
   + Predict future NHR:
-- ZCash support for estimation
++ ZCash support for estimation
+  + testReadBlocksFromZCashRPC: Reading blocks from node. 
+    + Need to create new container from newest image and add new port to 8233 (was wrong port)
+      + DONE: blockcount_322963
+    + Then read ALL blocks from node and save to directory in height.json files
+
+
+  - Refactor BlockchainReader to separate out BlockStorage
+    + BlockStorage deals with simple read/write operations of blocks 
+    + BlockchainReader deals with searching BlockStorage for the right blocks (based on dates)
+    + Change BlockStorage interface to the following calls:
+      + `GetBlockCount(): integer` - https://bitcoin.org/en/developer-reference#getblockcount 
+      + `GetBlockHash(height: integer): string` - https://bitcoin.org/en/developer-reference#getblockhash
+      + `GetBlockHeader(blockHash: string): object` - https://bitcoin.org/en/developer-reference#getblockheader
+    + Create BlockStorageFileSystem
+    + Get BlockchainReader to use BlockStorageFileSystem
+      + Binary Search for blocks by date
+# IN PROGRESS #    
+    - Move zcash blocks to it's own repo and use submodules to import it: https://blog.github.com/2016-02-01-working-with-submodules/
+
+    - Cache blocks in memory using `height -> Block` map.
+    - Create `BlockStorage` caching implementations that can have a fallback and chained together. The chain for these are:
+      - Memory -> Local Disk -> ZCash Node (or zchain api)
+
   - By pulling in chainwork and block time from z.chain api
-    - GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 17 blocks)
+    - GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 120 blocks)
+
   + Mock data for ZChain API
   - impl and test Estimator.estimateDailyChangeInNetworkHashRateZCash
+
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash
