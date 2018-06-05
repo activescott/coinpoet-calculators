@@ -4,8 +4,7 @@ import * as sinon from 'sinon'
 import * as _ from 'lodash'
 import { URL } from 'url'
 import * as path from 'path'
-import { FetchThunkForZCash } from '../helpers'
-
+import Config from '../../Config'
 import BlockchainReader from '../../src/blockchains/BlockchainReader'
 import BlockStorageFileSystem from '../../src/blockchains/BlockStorageFileSystem'
 
@@ -15,7 +14,7 @@ describe('BlockchainReader', function () {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    reader = new BlockchainReader(new BlockStorageFileSystem(path.resolve(__dirname, '../../test-data/zcash-blocks/by-height')))
+    reader = new BlockchainReader(new BlockStorageFileSystem(Config.zcashBlocksPath))
   })
 
   afterEach(() => {

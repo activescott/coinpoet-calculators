@@ -15,7 +15,6 @@ A library to make various estimates related mining cryptocurrency including time
       + DONE: blockcount_322963
     + Then read ALL blocks from node and save to directory in height.json files
 
-
   - Refactor BlockchainReader to separate out BlockStorage
     + BlockStorage deals with simple read/write operations of blocks 
     + BlockchainReader deals with searching BlockStorage for the right blocks (based on dates)
@@ -26,12 +25,16 @@ A library to make various estimates related mining cryptocurrency including time
     + Create BlockStorageFileSystem
     + Get BlockchainReader to use BlockStorageFileSystem
       + Binary Search for blocks by date
-# IN PROGRESS #    
-    - Move zcash blocks to it's own repo and use submodules to import it: https://blog.github.com/2016-02-01-working-with-submodules/
-
-    - Cache blocks in memory using `height -> Block` map.
+    + Move zcash blocks to it's own folder/repo and use submodules to import it: https://blog.github.com/2016-02-01-working-with-submodules/
+      + TOO BIG: GitHub wants <1GB Repos and this is ~2.6GB
+        + Dropbox?
+# IN PROGRESS #
     - Create `BlockStorage` caching implementations that can have a fallback and chained together. The chain for these are:
       - Memory -> Local Disk -> ZCash Node (or zchain api)
+      - Memory:  - Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
+        - Cache blocks in memory using `height -> Block` map.
+        - Cache a small number like ~7 days of blocks (576 per day ~576*7=4K)
+
 
   - By pulling in chainwork and block time from z.chain api
     - GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 120 blocks)

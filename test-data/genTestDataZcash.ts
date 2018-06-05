@@ -7,17 +7,14 @@ import MockFetch from '../test-tools/MockFetch'
 import Diag, { LogLevel } from '../src/Diag'
 import { fetch } from 'cross-fetch'
 import * as _fs from 'fs'
-const { mkdir } = require('./fsutil')
+import Config from '../Config'
+import { mkdir } from './fsutil'
 
 const fs: any = BbPromise.promisifyAll(_fs)
 
 const D = new Diag('genTestDataZcash')
 
 Diag.Level = LogLevel.DEBUG
-
-function buildFetchMock () {
-  return new MockFetch(path.resolve(__dirname, '../test-data/zcash-blocks'), localDirMapper).fetchThunk()
-}
 
 function localDirMapper (urlInput) {
   const u = new URL(urlInput)
@@ -28,15 +25,6 @@ function* xrange (start, stop, step=1) {
   for (let i = start; i < stop; i += step) {
     yield i
   }
-}
-
-async function DOWNLOAD_ZCHAIN_TEST_DATA() {
-  // BE CAREFUL THIS OVERWRITES TEST DATA
-  let fetcher = new MockFetch(path.resolve('./zcash-blocks/ascending'), localDirMapper)
-  const max_block_height = 315000 // offset=block height (not page offset), there was only ~306K blocks in April 2018
-  //DESCENDING let urls = _.map(Array.from(xrange(0, max_block_height, 20)), n => `https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=descending&limit=20&offset=${n}`)
-  let urls = _.map(Array.from(xrange(0, max_block_height, 20)), n => `https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=ascending&limit=20&offset=${n}`)
-  return fetcher.createMockData(urls, true)
 }
 
 async function getBlockCount() {
@@ -66,6 +54,13 @@ async function getBlockHeaderFromHeight(height: number) {
   return header
 }
 
+
+const localDir = Config.zcashBlocksPath
+const indexDir = path.join(localDir, 'blockhash-to-height-index')
+
+/**
+ * Downloads data from the RPC endpoint/API on a ZCash node and puts it in the configured directory.
+ */
 async function DOWNLOAD_RPC_TEST_DATA() {
   try {
     console.log('Getting current blockheight')
@@ -111,9 +106,6 @@ async function DOWNLOAD_RPC_TEST_DATA() {
     process.exit(20)
   }
 }
-
-const localDir = path.resolve(__dirname, './zcash-blocks/by-height')
-const indexDir = path.join(localDir, 'blockhash-to-height-index')  
 
 /**
  * Saves an blockHash -> height index in a subfolder

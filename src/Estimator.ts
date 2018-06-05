@@ -6,7 +6,7 @@ import { BlockWithNetworkHashRate, Block } from './interfaces'
 import BlockchainReader from './blockchains/BlockchainReader'
 import BlockStorageFileSystem from './blockchains/BlockStorageFileSystem'
 import * as path from 'path'
-
+import Config from '../Config'
 
 const D = new Diag('Estimator')
 
@@ -149,7 +149,7 @@ export class Estimator {
   }
 
   static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date): Promise<BigNumber> {
-    let reader = new BlockchainReader(new BlockStorageFileSystem(path.resolve(__dirname, '../test-data/zcash-blocks/by-height')))
+    let reader = new BlockchainReader(new BlockStorageFileSystem(Config.zcashBlocksPath))
     let chain = await reader.subset(from, to)
     // get hashrate for "from" block:
     let fromBlock = await Estimator.blockWithNetworkHashRate(chain.oldestBlock, reader)

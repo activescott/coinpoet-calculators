@@ -7,6 +7,7 @@ import { BigNumber } from 'bignumber.js'
 import { Block } from '../src/interfaces'
 import { Estimator } from '../src/Estimator'
 import BlockStorageFileSystem from '../src/blockchains/BlockStorageFileSystem'
+import Config from '../Config'
 
 
 describe('Estimator', function () {
@@ -57,7 +58,7 @@ describe('Estimator', function () {
 
   describe('estimateDailyChangeInNetworkHashRate', function () {
     it('estimateNetworkHashRate', async function () {
-      let bs = new BlockStorageFileSystem(path.resolve(__dirname, '../test-data/zcash-blocks/by-height'))
+      let bs = new BlockStorageFileSystem(Config.zcashBlocksPath)
       let testBlock = await bs.getBlockFromHeight(334000)
       let val = await Estimator.estimateNetworkHashRate(testBlock, 120)
       console.log('val:', val.toFixed(0))

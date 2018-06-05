@@ -4,7 +4,7 @@ import * as sinon from 'sinon'
 import * as _ from 'lodash'
 import { URL } from 'url'
 import * as path from 'path'
-
+import Config from '../../Config'
 import BlockStorageFileSystem from '../../src/blockchains/BlockStorageFileSystem'
 import { Block } from '../../src/interfaces'
 
@@ -14,7 +14,7 @@ describe('BlockStorageFileSystem', function () {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    bsfs = new BlockStorageFileSystem(path.resolve(__dirname, '../../test-data/zcash-blocks/by-height'))
+    bsfs = new BlockStorageFileSystem(Config.zcashBlocksPath)
   })
 
   afterEach(() => {
