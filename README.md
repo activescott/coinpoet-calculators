@@ -28,6 +28,7 @@ A library to make various estimates related mining cryptocurrency including time
     + Move zcash blocks to it's own folder/repo and use submodules to import it: https://blog.github.com/2016-02-01-working-with-submodules/
       + TOO BIG: GitHub wants <1GB Repos and this is ~2.6GB
         + Dropbox?
+    + create zchain api BlockStorge impl (BlockStorageZChainApi)
 # IN PROGRESS #
     - Create `BlockStorage` caching implementations that can have a fallback and chained together. The chain for these are:
       - Memory -> Local Disk -> ZCash Node (or zchain api)
