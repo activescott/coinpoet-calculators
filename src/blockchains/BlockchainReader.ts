@@ -1,12 +1,13 @@
 import * as _ from 'lodash'
-import { BigNumber } from 'bignumber.js'
-
 import { Block, Chain, BlockStorage } from '../interfaces'
-import { FetchInterface, FetchImpl } from '../services'
 import Diag from '../Diag'
 
 const D = new Diag('BlockchainReader')
 
+/**
+ * Provides an interface for random access reading of a blockchain.
+ * Provide it a @see BlockStorage interface to read any blockchain.
+ */
 export default class BlockchainReader {
   constructor (readonly storage: BlockStorage<Block>) {
   }

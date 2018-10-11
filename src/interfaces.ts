@@ -44,6 +44,7 @@ export abstract class BlockStorage<TBlock extends Block> {
    * @param blockHash {string} The hash of the block to be returned.
    */
   abstract async getBlock (blockHash: string): Promise<TBlock>
+  
   /**
    * Returns a block at the given height in the local best block chain.
    * @param height {number} The height of the block to be returned.

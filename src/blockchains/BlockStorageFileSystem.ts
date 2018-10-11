@@ -9,6 +9,12 @@ import Diag from '../Diag'
 const fs: any = BbPromise.promisifyAll(_fs)
 const D = new Diag('BlockStorageFileSystem')
 
+/**
+ * Reads a blockchain as a seequence of JSON blocks in a single directory. 
+ * The blocks must be named as <height>.json.
+ * The JSON format is expected to be bitcoin-like (e.g. bitcoin, zcash, etc.). 
+ * To support other formats really just need to override @see BlockStorageFileSystem.loadBlockFile.
+ */
 export default class BlockStorageFileSystem extends BlockStorage<Block> {
   /**
    * Creates a new instance of @see BlockStorageFileSystem.
@@ -80,6 +86,12 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
 }
 
 class BlockStorageBlock implements Block {
+  readonly hash: string
+  readonly height: number
+  readonly time: number
+  readonly previousBlockHash: string
+  readonly chainWork: BigNumber
+
   constructor (readonly owningStorage: BlockStorage<Block>, blockJson: any) {
     this.hash = blockJson.hash
     this.height = blockJson.height
@@ -87,11 +99,7 @@ class BlockStorageBlock implements Block {
     this.previousBlockHash = blockJson.previousblockhash
     this.chainWork = new BigNumber('0x' + blockJson.chainwork)
   }
-  readonly hash: string
-  readonly height: number
-  readonly time: number
-  readonly previousBlockHash: string
-  readonly chainWork: BigNumber
+
   previous(): Promise<Block> {
     if (this.height == 0 || (!this.previousBlockHash)) return null
     return this.owningStorage.getBlock(this.previousBlockHash)

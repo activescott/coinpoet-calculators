@@ -23,26 +23,27 @@ A library to make various estimates related mining cryptocurrency including time
       + `GetBlockHash(height: integer): string` - https://bitcoin.org/en/developer-reference#getblockhash
       + `GetBlockHeader(blockHash: string): object` - https://bitcoin.org/en/developer-reference#getblockheader
     + Create BlockStorageFileSystem
+    + Mock data for ZChain API
     + Get BlockchainReader to use BlockStorageFileSystem
       + Binary Search for blocks by date
+    + impl and test Estimator.estimateDailyChangeInNetworkHashRateZCash
     + Move zcash blocks to it's own folder/repo and use submodules to import it: https://blog.github.com/2016-02-01-working-with-submodules/
       + TOO BIG: GitHub wants <1GB Repos and this is ~2.6GB
         + Dropbox?
     + create zchain api BlockStorge impl (BlockStorageZChainApi)
+      + By pulling in chainwork and block time from z.chain api
+        + GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 120 blocks)
+
 # IN PROGRESS #
-    - Create `BlockStorage` caching implementations that can have a fallback and chained together. The chain for these are:
-      - Memory -> Local Disk -> ZCash Node (or zchain api)
-      - Memory:  - Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
-        - Cache blocks in memory using `height -> Block` map.
-        - Cache a small number like ~7 days of blocks (576 per day ~576*7=4K)
-
-
-  - By pulling in chainwork and block time from z.chain api
-    - GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 120 blocks)
-
-  + Mock data for ZChain API
-  - impl and test Estimator.estimateDailyChangeInNetworkHashRateZCash
-
+    - Create `BlockStorage` caching implementations that can have a fallback and chained together. 
+      + CompositeBlockStorage ->  
+        + Basic Unit Tests with two mock implementions.
+        - Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
+      - LruBlockStorage -> Least recently used block storage that caches ~5K blocks?
+      - The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
+        - Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
+          - Cache blocks in memory using `height -> Block` map.
+          - Cache a small number like ~7 days of blocks (576 per day ~576*7=4K)
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash
