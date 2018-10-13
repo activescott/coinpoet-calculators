@@ -38,12 +38,14 @@ A library to make various estimates related mining cryptocurrency including time
     - Create `BlockStorage` caching implementations that can have a fallback and chained together. 
       + CompositeBlockStorage ->  
         + Basic Unit Tests with two mock implementions.
-        - Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
+        + Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
       - LruBlockStorage -> Least recently used block storage that caches ~5K blocks?
+      - ZcashNodeRpcBlockStorage - reads directly from a zcash node's RPC interface.
       - The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
         - Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
           - Cache blocks in memory using `height -> Block` map.
           - Cache a small number like ~7 days of blocks (576 per day ~576*7=4K)
+      
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash
