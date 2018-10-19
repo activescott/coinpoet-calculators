@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as _ from 'lodash'
 import { BigNumber } from 'bignumber.js'
 import { BlockStorage, Block } from "../interfaces"
-import Diag from '../Diag'
+import Diag from '../lib/Diag'
 
 const fs: any = BbPromise.promisifyAll(_fs)
 const D = new Diag('BlockStorageFileSystem')

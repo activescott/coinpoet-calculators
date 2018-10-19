@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js'
-import Diag from './Diag'
+import Diag from './lib/Diag'
 
 const D = new Diag('BitcoinDifficulty')
 

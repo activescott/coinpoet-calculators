@@ -3,7 +3,7 @@ import * as _fs from 'fs'
 import * as path from 'path'
 import { fetch as _realFetch } from 'cross-fetch'
 import * as _ from 'lodash'
-import Diag from '../src/Diag'
+import Diag from '../src/lib/Diag'
 const fs = BbPromise.promisifyAll(_fs)
 
 const D = new Diag('MockFetch')

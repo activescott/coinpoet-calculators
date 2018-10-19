@@ -1,7 +1,7 @@
 import { Block, BlockStorage } from '../interfaces'
 
-import Diag from '../Diag'
-import { stringify } from 'querystring';
+import Diag from '../lib/Diag'
+import Lru from '../lib/Lru'
 
 const D = new Diag('LruBlockStorage')
 
@@ -40,122 +40,5 @@ export default class LruBlockStorage extends BlockStorage<Block> {
   
   getBlock(blockHash: string): Promise<Block> {
     return this.hashToBlockCache.get(blockHash)
-  }
-}
-
-class Lru<TKey, TValue> {
-  // most recently accessed node
-  private head: LruNode<TKey, TValue> = null
-  private tail: LruNode<TKey, TValue> = null
-  private readonly map = new Map<TKey, LruNode<TKey, TValue>>()
-
-  constructor (
-    readonly maxSize: number,
-    readonly getter: (key: any) => TValue) {
-      if (maxSize < 2) {
-        throw new Error('maxSize must be at least 2')
-      }
-      if (!getter) {
-        throw new Error('getter must be provided')
-      }
-  }
-
-  get size () {
-    let c = 0
-    let node = this.head
-    while (node) {
-      D.log('size:', node.key)
-      c++
-      node = node.next
-    }
-    D.debug('size:', c)
-    return c
-  }
-
-  get (key: TKey): TValue {
-    let node = this.map.get(key);
-    if (!node) {
-      D.debug('Lru cache miss for key', key)
-      let val = this.getter(key)
-      D.debug('getter returned:', val)
-      if (val) {
-        node = new LruNode(key, val)
-        this.map.set(key, node)
-      }
-    } else {
-      D.debug('Lru cache hit for key', key)
-    }
-    this.onNodeAccessed(node)
-    return node.value
-  }
-
-  private onNodeAccessed(node: LruNode<TKey, TValue>): void {
-    D.log('onNodeAccessed:', node.key)
-    // maintain head:
-    if (this.head != node) {
-      node.insertYourselfBefore(this.head)
-      this.head = node
-    }
-
-    // maintain tail:
-    if (this.tail != node) {
-      node.insertYourselfAfter(this.tail)
-      this.tail = node
-    }
-
-    // maintain cache size:
-    while (this.tail && this.map.size > this.maxSize) {
-      D.log('Lru deleting node', this.tail.key)
-      this.map.delete(this.tail.key)
-      let oldTail = this.tail
-      this.tail = oldTail.previous
-      if (oldTail)
-        oldTail.next = this.tail
-      this.tail.next = null
-    }
-  }
-}
-
-class LruNode<TKey, TValue> {
-  constructor (
-    public readonly key: TKey,
-    public readonly value: TValue,
-    public next: LruNode<TKey, TValue> = null,
-    public previous: LruNode<TKey, TValue> = null
-    ) {
-  }
-
-  public insertYourselfBefore (beforeNode) {
-    if (!beforeNode)
-      return
-    // ignore request to insert before ourselves:
-    if (this === beforeNode)
-      return
-    // ignore if we're already before it:
-    if (beforeNode && beforeNode.previous === this)
-      return
-    let myPrevious = beforeNode.previous
-    let myNext = beforeNode
-    if (myPrevious) myPrevious.next = this
-    if (myNext) myNext.previous = this
-    this.previous = myPrevious
-    this.next = myNext
-  }
-
-  public insertYourselfAfter(afterNode) {
-    if (!afterNode)
-      return
-    // ignore request to insert after ourselves
-    if (this === afterNode)
-      return
-    // ignore request to insert after ourselves
-    if (afterNode && afterNode.next === this)
-      return
-    let myPrevious = afterNode
-    let myNext = afterNode.next
-    if (myPrevious) myPrevious.next = this
-    if (myNext) myNext.previous = this
-    this.previous = myPrevious
-    this.next = myNext
   }
 }

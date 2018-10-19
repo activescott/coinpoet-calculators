@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import { Block, Chain, BlockStorage } from '../interfaces'
-import Diag from '../Diag'
+import Diag from '../lib/Diag'
 
 const D = new Diag('BlockchainReader')
 

@@ -1,7 +1,7 @@
 import { BitcoinDifficulty } from './BitcoinDifficulty'
 import * as _ from 'lodash'
 import { BigNumber } from 'bignumber.js'
-import Diag from './Diag'
+import Diag from './lib/Diag'
 import { BlockWithNetworkHashRate, Block } from './interfaces'
 import BlockchainReader from './blockchains/BlockchainReader'
 import BlockStorageFileSystem from './blockchains/BlockStorageFileSystem'
