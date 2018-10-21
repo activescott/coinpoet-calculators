@@ -1,4 +1,4 @@
-import { fetch as CrossFetch } from 'cross-fetch'
+import { fetch as CrossFetch } from "cross-fetch"
 
 // The idea of this module is to put internal dependent utilities here that can be replaced if necessary
 

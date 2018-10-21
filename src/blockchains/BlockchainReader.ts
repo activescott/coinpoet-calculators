@@ -1,19 +1,18 @@
-import * as _ from 'lodash'
-import { Block, Chain, BlockStorage } from '../interfaces'
-import Diag from '../lib/Diag'
+import * as _ from "lodash"
+import { Block, Chain, BlockStorage } from "../interfaces"
+import Diag from "../lib/Diag"
 
-const D = new Diag('BlockchainReader')
+const D = new Diag("BlockchainReader")
 
 /**
  * Provides an interface for random access reading of a blockchain.
  * Provide it a @see BlockStorage interface to read any blockchain.
  */
 export default class BlockchainReader {
-  constructor (readonly storage: BlockStorage<Block>) {
-  }
+  constructor(readonly storage: BlockStorage<Block>) {}
 
   /** Returns the most recently mined block available on the blockchain. */
-  async newestBlock (): Promise<Block> {
+  async newestBlock(): Promise<Block> {
     let count = await this.storage.getBlockCount()
     return this.storage.getBlockFromHeight(count - 1)
   }
@@ -21,11 +20,10 @@ export default class BlockchainReader {
   /**
    * Returns the previous block of the specified block.
    */
-  previous (block: Block): Promise<Block> {
+  previous(block: Block): Promise<Block> {
     if (block.previousBlockHash)
       return this.storage.getBlock(block.previousBlockHash)
-    else
-      return null
+    else return null
   }
 
   /**
@@ -37,7 +35,10 @@ export default class BlockchainReader {
    * - The oldest block in the returned chain will be a block at the specified time or a block that is aproximately the specified time.
    * - If no block existed at `oldestBlockTime` the genesis block will be returned.
    */
-  async subset (oldestBlockTime: Date, newestBlockTime: Date): Promise<Chain<Block>> {
+  async subset(
+    oldestBlockTime: Date,
+    newestBlockTime: Date
+  ): Promise<Chain<Block>> {
     const oldestSeconds = oldestBlockTime.valueOf() / 1000
     const newestSeconds = newestBlockTime.valueOf() / 1000
 
@@ -46,7 +47,7 @@ export default class BlockchainReader {
     return Promise.resolve(new Chain(oldestBlock, newestBlock))
   }
 
-  async search (soughtTime: number): Promise<Block> {
+  async search(soughtTime: number): Promise<Block> {
     let best: Block
     let left, mid, right
     right = (await this.storage.getBlockCount()) - 1
@@ -57,7 +58,7 @@ export default class BlockchainReader {
       if (best.time < soughtTime) {
         left = mid + 1
       } else if (best.time > soughtTime) {
-        right = mid - 1 
+        right = mid - 1
       } else {
         // best.time == soughtTime
         return best

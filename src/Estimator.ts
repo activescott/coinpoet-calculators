@@ -1,29 +1,32 @@
-import { BitcoinDifficulty } from './BitcoinDifficulty'
-import * as _ from 'lodash'
-import { BigNumber } from 'bignumber.js'
-import Diag from './lib/Diag'
-import { BlockWithNetworkHashRate, Block } from './interfaces'
-import BlockchainReader from './blockchains/BlockchainReader'
-import BlockStorageFileSystem from './blockchains/BlockStorageFileSystem'
-import * as path from 'path'
-import Config from './Config'
+import { BitcoinDifficulty } from "./BitcoinDifficulty"
+import * as _ from "lodash"
+import { BigNumber } from "bignumber.js"
+import Diag from "./lib/Diag"
+import { BlockWithNetworkHashRate, Block } from "./interfaces"
+import BlockchainReader from "./blockchains/BlockchainReader"
+import BlockStorageFileSystem from "./blockchains/BlockStorageFileSystem"
+import * as path from "path"
+import Config from "./Config"
 
-const D = new Diag('Estimator')
+const D = new Diag("Estimator")
 
 /**
  * Estimates earnings and other attributes of mining based on mean time between blocks and network hash rate.
  * This works for equihash and should work for most algorithms as it doesn't get into implementation-specific interpretations of difficulty and hashing algorithms.
  */
 export class Estimator {
-
   /**
    * Calculates the average amount of time between mined blocks at the specified block looking back over the specified period of time.
-   * @param block 
-   * @param lookbackCount 
+   * @param block
+   * @param lookbackCount
    */
-  static async meanTimeBetweenBlocks(block: Block, lookbackTimeSpanSeconds: number): Promise<number> {
-    if (!block) throw new Error('block must be provided')
-    if (lookbackTimeSpanSeconds < 1) throw new Error('lookbackTimeSpanSeconds must be greater than zero')
+  static async meanTimeBetweenBlocks(
+    block: Block,
+    lookbackTimeSpanSeconds: number
+  ): Promise<number> {
+    if (!block) throw new Error("block must be provided")
+    if (lookbackTimeSpanSeconds < 1)
+      throw new Error("lookbackTimeSpanSeconds must be greater than zero")
     let b0 = await block.previous()
     let lookbackCount = 1
     while (b0 && block.time - b0.time < lookbackTimeSpanSeconds) {
@@ -37,16 +40,31 @@ export class Estimator {
    * Estimates the earnings for the given hash rate and given network information for a single day.
    * Essentially this is the same as @see estimateFutureEarnings but for a single day.
    */
-  static dailyEarnings (yourHashesPerSecond: BigNumber,
-                  networkHashesPerSecond: BigNumber,
-                  meanNetworkSecondsBetweenBlocks: number,
-                  rewardedCoinsPerMinedBlock: number,
-                  fiatPerCoinsExchangeRate: number,
-                  watts: number = 0,
-                  electricityCostKwh: number = 0,
-                  feesAsPercent: number = 0) {
-    let days = Estimator.estimateFutureEarnings(1, new BigNumber(0), yourHashesPerSecond, networkHashesPerSecond, meanNetworkSecondsBetweenBlocks, rewardedCoinsPerMinedBlock, fiatPerCoinsExchangeRate, watts, electricityCostKwh, feesAsPercent)
-    return _.size(days) > 0 && _.has(days[0], 'totalProfit') ? days[0].totalProfit : 0
+  static dailyEarnings(
+    yourHashesPerSecond: BigNumber,
+    networkHashesPerSecond: BigNumber,
+    meanNetworkSecondsBetweenBlocks: number,
+    rewardedCoinsPerMinedBlock: number,
+    fiatPerCoinsExchangeRate: number,
+    watts: number = 0,
+    electricityCostKwh: number = 0,
+    feesAsPercent: number = 0
+  ) {
+    let days = Estimator.estimateFutureEarnings(
+      1,
+      new BigNumber(0),
+      yourHashesPerSecond,
+      networkHashesPerSecond,
+      meanNetworkSecondsBetweenBlocks,
+      rewardedCoinsPerMinedBlock,
+      fiatPerCoinsExchangeRate,
+      watts,
+      electricityCostKwh,
+      feesAsPercent
+    )
+    return _.size(days) > 0 && _.has(days[0], "totalProfit")
+      ? days[0].totalProfit
+      : 0
   }
 
   /**
@@ -63,7 +81,8 @@ export class Estimator {
    * @param electricityCostKwh Your cost of electricity in kilowatt hours.
    * @param feesAsPercent Any other fees you want to take off the top of generated revenue (e.g. pool fees + mining software fees). Expressed as a percentage (between 0 and 1).
    */
-  static estimateFutureEarnings (timeHorizonInDays: number,
+  static estimateFutureEarnings(
+    timeHorizonInDays: number,
     networkHashRateChangePerDay: BigNumber,
     yourHashesPerSecond: BigNumber,
     networkHashesPerSecond: BigNumber,
@@ -72,57 +91,66 @@ export class Estimator {
     fiatPerCoinsExchangeRate: number,
     watts: number = 0,
     electricityCostKwh: number = 0,
-    feesAsPercent: number = 0) {
-      const SECONDS_PER_HOUR = 60 * 60.0
-      const SECONDS_PER_DAY = SECONDS_PER_HOUR * 24.0
-      let totalRevenue = 0
-      let totalElectricCost = 0
-      let totalFeeCost = 0
-      let totalProfit = 0
-      let days = []
-      for (let dayNum = 0; dayNum < timeHorizonInDays; dayNum++) {
-        let daysToMineBlock = new BigNumber(meanNetworkSecondsBetweenBlocks).dividedBy(yourHashesPerSecond.dividedBy(networkHashesPerSecond)).dividedBy(SECONDS_PER_DAY)
-        let blocksPerDay = new BigNumber(1.0).dividedBy(daysToMineBlock).toNumber()
+    feesAsPercent: number = 0
+  ) {
+    const SECONDS_PER_HOUR = 60 * 60.0
+    const SECONDS_PER_DAY = SECONDS_PER_HOUR * 24.0
+    let totalRevenue = 0
+    let totalElectricCost = 0
+    let totalFeeCost = 0
+    let totalProfit = 0
+    let days = []
+    for (let dayNum = 0; dayNum < timeHorizonInDays; dayNum++) {
+      let daysToMineBlock = new BigNumber(meanNetworkSecondsBetweenBlocks)
+        .dividedBy(yourHashesPerSecond.dividedBy(networkHashesPerSecond))
+        .dividedBy(SECONDS_PER_DAY)
+      let blocksPerDay = new BigNumber(1.0)
+        .dividedBy(daysToMineBlock)
+        .toNumber()
 
-        let revenue = (blocksPerDay * rewardedCoinsPerMinedBlock * fiatPerCoinsExchangeRate)
-        totalRevenue += revenue
+      let revenue =
+        blocksPerDay * rewardedCoinsPerMinedBlock * fiatPerCoinsExchangeRate
+      totalRevenue += revenue
 
-        let electricCost = (watts / 1000) * electricityCostKwh * 24
-        totalElectricCost += electricCost
+      let electricCost = (watts / 1000) * electricityCostKwh * 24
+      totalElectricCost += electricCost
 
-        let feeCost = revenue * feesAsPercent
-        totalFeeCost += feeCost
+      let feeCost = revenue * feesAsPercent
+      totalFeeCost += feeCost
 
-        let profit = revenue - (electricCost + feeCost)
-        totalProfit += profit
+      let profit = revenue - (electricCost + feeCost)
+      totalProfit += profit
 
-        let dayStats = {
-          dayNumber: dayNum,
-          networkHashesPerSecond,
-          revenue,
-          totalRevenue,
-          electricCost,
-          totalElectricCost,
-          feeCost,
-          totalFeeCost,
-          profit,
-          totalProfit
-        }
-        days.push(dayStats)
-        networkHashesPerSecond.plus(networkHashRateChangePerDay)
+      let dayStats = {
+        dayNumber: dayNum,
+        networkHashesPerSecond,
+        revenue,
+        totalRevenue,
+        electricCost,
+        totalElectricCost,
+        feeCost,
+        totalFeeCost,
+        profit,
+        totalProfit
       }
-      return days
+      days.push(dayStats)
+      networkHashesPerSecond.plus(networkHashRateChangePerDay)
+    }
+    return days
   }
 
   /**
    * Estimates the network hash rate at one block (`newBlock`) by the amount of work accomplished between two blocks.
-   * Note that for blockchains without a chainWork stored in every block, since this calculation only uses the 
+   * Note that for blockchains without a chainWork stored in every block, since this calculation only uses the
    * *relative* difference in chainWork, the caller can calculate a chainWork for part of the chain to satisfy this function's requirements.
    * @param newBlock The newest block; The network hashrate will be estimated at the time of this block.
    * @returns The estimated network hash rate
    */
-  static async estimateNetworkHashRate (newBlock: Block, lookbackCount: number = 120): Promise<BigNumber> {
-    if (!newBlock) throw new Error('newBlock cannot be null')
+  static async estimateNetworkHashRate(
+    newBlock: Block,
+    lookbackCount: number = 120
+  ): Promise<BigNumber> {
+    if (!newBlock) throw new Error("newBlock cannot be null")
     let b0 = newBlock
     let minTime: number = b0.time
     let maxTime = minTime
@@ -132,8 +160,7 @@ export class Estimator {
       maxTime = Math.max(b0.time, maxTime)
       lookbackCount--
     }
-    if (minTime == maxTime)
-      return new BigNumber(0)
+    if (minTime == maxTime) return new BigNumber(0)
     let workDiff = newBlock.chainWork.minus(b0.chainWork)
     let timeDiff = maxTime - minTime
     let estimatedNetworkHashRate = workDiff.dividedBy(timeDiff)
@@ -145,35 +172,54 @@ export class Estimator {
    * @param block A block to add hashrate to.
    * @param reader A reader for the speicifed block to get additional block chain info from.
    */
-  static async blockWithNetworkHashRate (block: Block, reader: BlockchainReader): Promise<BlockWithNetworkHashRate> {
+  static async blockWithNetworkHashRate(
+    block: Block,
+    reader: BlockchainReader
+  ): Promise<BlockWithNetworkHashRate> {
     let hashRate = await Estimator.estimateNetworkHashRate(block)
     //let clone = Object.assign(block, { networkHashRate: hashRate })
-    block['networkHashRate'] = hashRate
+    block["networkHashRate"] = hashRate
     //return (clone as BlockWithNetworkHashRate)
-    return (block as BlockWithNetworkHashRate)
+    return block as BlockWithNetworkHashRate
   }
 
   /**
    * Estimates the daily change in network solutions/hashes per second based on historical data.
-   * The historical data is really two attributes of two historical blocks. 
+   * The historical data is really two attributes of two historical blocks.
    * The two blocks chosen should be the one at the beginning of the historical period you want to evaluate hash rate increase based on.
    * For example, if you wanted to use 30 day period to assess the daily hash rate change from, you'd choose a block at the beginning of a thirty day period and a block at the end of that 30 day period.
    */
-  static estimateDailyChangeInNetworkHashRate (oldBlock: BlockWithNetworkHashRate, newBlock: BlockWithNetworkHashRate): BigNumber {
+  static estimateDailyChangeInNetworkHashRate(
+    oldBlock: BlockWithNetworkHashRate,
+    newBlock: BlockWithNetworkHashRate
+  ): BigNumber {
     const SECONDS_PER_DAY = 24 * 60 * 60
     let periodInDays = (newBlock.time - oldBlock.time) / SECONDS_PER_DAY
-    let changeInHasRatePS = newBlock.networkHashRate.minus(oldBlock.networkHashRate)
+    let changeInHasRatePS = newBlock.networkHashRate.minus(
+      oldBlock.networkHashRate
+    )
     return changeInHasRatePS.dividedBy(periodInDays.toFixed(4)) // Because BigNumber throws if >15 significant digits
   }
 
   // TODO: This function is more of a demo of using the primatives above and should be moved somewhere else.
-  static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date): Promise<BigNumber> {
-    let reader = new BlockchainReader(new BlockStorageFileSystem(Config.zcashBlocksPath))
+  static async estimateDailyChangeInNetworkHashRateZCash(
+    from: Date,
+    to: Date
+  ): Promise<BigNumber> {
+    let reader = new BlockchainReader(
+      new BlockStorageFileSystem(Config.zcashBlocksPath)
+    )
     let chain = await reader.subset(from, to)
     // get hashrate for "from" block:
-    let fromBlock = await Estimator.blockWithNetworkHashRate(chain.oldestBlock, reader)
+    let fromBlock = await Estimator.blockWithNetworkHashRate(
+      chain.oldestBlock,
+      reader
+    )
     // get hashrate for "to" block:
-    let toBlock = await Estimator.blockWithNetworkHashRate(chain.newestBlock, reader)    
+    let toBlock = await Estimator.blockWithNetworkHashRate(
+      chain.newestBlock,
+      reader
+    )
     return Estimator.estimateDailyChangeInNetworkHashRate(fromBlock, toBlock)
   }
 }
