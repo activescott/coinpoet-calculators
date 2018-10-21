@@ -22,12 +22,17 @@ export default class LruBlockStorage extends BlockStorage<Block> {
     if (!this.realStorage) {
       throw new Error("realStorage must be provided")
     }
-    this.heightToHashCache = new Lru<number, Promise<string>>(maxSize, height =>
-      realStorage.getBlockHash(height)
+    this.heightToHashCache = new Lru<number, Promise<string>>(
+      maxSize,
+      height => {
+        D.debug("caching", height)
+        return realStorage.getBlockHash(height)
+      }
     )
-    this.hashToBlockCache = new Lru<string, Promise<Block>>(maxSize, hash =>
-      realStorage.getBlock(hash)
-    )
+    this.hashToBlockCache = new Lru<string, Promise<Block>>(maxSize, hash => {
+      D.debug("caching", hash)
+      return realStorage.getBlock(hash)
+    })
   }
 
   get size() {
@@ -43,6 +48,17 @@ export default class LruBlockStorage extends BlockStorage<Block> {
   }
 
   getBlock(blockHash: string): Promise<Block> {
-    return this.hashToBlockCache.get(blockHash)
+    return proxyBlock(this.hashToBlockCache.get(blockHash), this)
+  }
+}
+
+async function proxyBlock(
+  block: Block | Promise<Block>,
+  owningStorage: BlockStorage<Block>
+): Promise<Block> {
+  let resolvedBlock = await block
+  return {
+    ...resolvedBlock,
+    previous: () => owningStorage.getBlock(resolvedBlock.previousBlockHash)
   }
 }

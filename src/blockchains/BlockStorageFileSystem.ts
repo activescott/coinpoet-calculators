@@ -55,7 +55,7 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
     try {
       str = await fs.readFileAsync(filePath)
     } catch (err) {
-      D.error(`Error reading hash index file ${filePath}: ${err.message}`)
+      D.warn(`Error reading hash index file ${filePath}: ${err.message}`)
       throw err
     }
     let num
@@ -73,14 +73,14 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
     try {
       str = await fs.readFileAsync(filePath)
     } catch (err) {
-      D.error(`Error reading file ${filePath}: ${err.message}`)
+      D.warn(`Error reading file ${filePath}: ${err.message}`)
       throw err
     }
     let json
     try {
       json = JSON.parse(str)
     } catch (err) {
-      D.error(`Error parsing json in file ${filePath}: ${err.message}`)
+      D.warn(`Error parsing json in file ${filePath}: ${err.message}`)
       throw err
     }
     return new JsonBlock(

@@ -21,19 +21,21 @@ export class Estimator {
    * @param lookbackCount
    */
   static async meanTimeBetweenBlocks(
-    block: Block,
-    lookbackTimeSpanSeconds: number
+    block: Block | Promise<Block>,
+    lookbackTimeSpanSeconds: number = 60 ^ (2 * 2)
   ): Promise<number> {
     if (!block) throw new Error("block must be provided")
     if (lookbackTimeSpanSeconds < 1)
       throw new Error("lookbackTimeSpanSeconds must be greater than zero")
-    let b0 = await block.previous()
+
+    let resolvedBlock: Block = await block
+    let b0 = await resolvedBlock.previous()
     let lookbackCount = 1
-    while (b0 && block.time - b0.time < lookbackTimeSpanSeconds) {
+    while (b0 && resolvedBlock.time - b0.time < lookbackTimeSpanSeconds) {
       b0 = await b0.previous()
       lookbackCount++
     }
-    return (block.time - b0.time) / lookbackCount
+    return (resolvedBlock.time - b0.time) / lookbackCount
   }
 
   /**
@@ -93,6 +95,8 @@ export class Estimator {
     electricityCostKwh: number = 0,
     feesAsPercent: number = 0
   ) {
+    if (!timeHorizonInDays || timeHorizonInDays <= 0)
+      throw new Error("timeHorizonInDays must be greater than zero")
     const SECONDS_PER_HOUR = 60 * 60.0
     const SECONDS_PER_DAY = SECONDS_PER_HOUR * 24.0
     let totalRevenue = 0
@@ -143,15 +147,16 @@ export class Estimator {
    * Estimates the network hash rate at one block (`newBlock`) by the amount of work accomplished between two blocks.
    * Note that for blockchains without a chainWork stored in every block, since this calculation only uses the
    * *relative* difference in chainWork, the caller can calculate a chainWork for part of the chain to satisfy this function's requirements.
-   * @param newBlock The newest block; The network hashrate will be estimated at the time of this block.
+   * @param newestBlock The newest block; The network hashrate will be estimated at the time of this block.
    * @returns The estimated network hash rate
    */
   static async estimateNetworkHashRate(
-    newBlock: Block,
+    newestBlock: Block | Promise<Block>,
     lookbackCount: number = 120
   ): Promise<BigNumber> {
-    if (!newBlock) throw new Error("newBlock cannot be null")
-    let b0 = newBlock
+    if (!newestBlock) throw new Error("newestBlock cannot be null")
+    let resolvedBlock: Block = await newestBlock
+    let b0 = resolvedBlock
     let minTime: number = b0.time
     let maxTime = minTime
     while (lookbackCount > 0 && b0) {
@@ -161,10 +166,36 @@ export class Estimator {
       lookbackCount--
     }
     if (minTime == maxTime) return new BigNumber(0)
-    let workDiff = newBlock.chainWork.minus(b0.chainWork)
+    let workDiff = resolvedBlock.chainWork.minus(b0.chainWork)
     let timeDiff = maxTime - minTime
     let estimatedNetworkHashRate = workDiff.dividedBy(timeDiff)
     return estimatedNetworkHashRate
+  }
+
+  /**
+   * Calculates the average change in network hashrate over the number of specified days.
+   * @param newestBlock The newest block in the blockchain
+   * @param dayCount The number of days to go back to use to average the daily change over
+   */
+  static async estimateNetworkHashRateDailyChange(
+    newestBlock: Block | Promise<Block>,
+    days: number = 5
+  ): Promise<BigNumber> {
+    if (!newestBlock) throw new Error("newestBlock cannot be null")
+    let resolvedBlock: Block = await newestBlock
+
+    const toDays = seconds => seconds / (60 ^ (2 * 24))
+    const elapsedDays = (newBlock: Block, oldBlock: Block) =>
+      toDays(newBlock.time - oldBlock.time)
+    let b0 = await resolvedBlock.previous()
+    while (b0 && elapsedDays(resolvedBlock, b0) < days) {
+      b0 = await b0.previous()
+    }
+    const withHashRate = b => Estimator.blockWithNetworkHashRate(b)
+    return Estimator.estimateDailyChangeInNetworkHashRate(
+      await withHashRate(b0),
+      await withHashRate(resolvedBlock)
+    )
   }
 
   /**
@@ -173,8 +204,7 @@ export class Estimator {
    * @param reader A reader for the speicifed block to get additional block chain info from.
    */
   static async blockWithNetworkHashRate(
-    block: Block,
-    reader: BlockchainReader
+    block: Block
   ): Promise<BlockWithNetworkHashRate> {
     let hashRate = await Estimator.estimateNetworkHashRate(block)
     //let clone = Object.assign(block, { networkHashRate: hashRate })
@@ -211,15 +241,9 @@ export class Estimator {
     )
     let chain = await reader.subset(from, to)
     // get hashrate for "from" block:
-    let fromBlock = await Estimator.blockWithNetworkHashRate(
-      chain.oldestBlock,
-      reader
-    )
+    let fromBlock = await Estimator.blockWithNetworkHashRate(chain.oldestBlock)
     // get hashrate for "to" block:
-    let toBlock = await Estimator.blockWithNetworkHashRate(
-      chain.newestBlock,
-      reader
-    )
+    let toBlock = await Estimator.blockWithNetworkHashRate(chain.newestBlock)
     return Estimator.estimateDailyChangeInNetworkHashRate(fromBlock, toBlock)
   }
 }

@@ -25,8 +25,7 @@ export default class BlockStorageZChainApi extends BlockStorage<Block> {
         )} (${typeof height}).`
       )
     let resp = await fetch(
-      `https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=ascending&limit=1&offset=${height -
-        1}`
+      `https://api.zcha.in/v2/mainnet/blocks?sort=height&direction=ascending&limit=1&offset=${height - 1}`
     )
     let json = await resp.json()
     if (!_.isArrayLike(json))
@@ -37,8 +36,10 @@ export default class BlockStorageZChainApi extends BlockStorage<Block> {
 
   async getBlock(blockHash: string): Promise<Block> {
     if (!blockHash) throw new Error("blockHash must be provided")
+    D.log('getBlock:', blockHash, 'fetch...')
     let resp = await fetch(`https://api.zcha.in/v2/mainnet/blocks/${blockHash}`)
     let json = await resp.json()
+    D.log('getBlock:', blockHash, 'fetched.')
     return new JsonBlock(
       this,
       json.hash,
