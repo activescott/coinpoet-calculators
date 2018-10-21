@@ -2,11 +2,8 @@
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import * as _ from 'lodash'
-import { URL } from 'url'
-import * as path from 'path'
-import Config from '../../Config'
+import Config from '../../src/Config'
 import BlockStorageFileSystem from '../../src/blockchains/BlockStorageFileSystem'
-import { Block } from '../../src/interfaces'
 
 describe('BlockStorageFileSystem', function () {
   let sandbox: sinon.SinonSandbox

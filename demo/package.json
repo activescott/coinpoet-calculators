@@ -1,0 +1,19 @@
+{
+  "name": "coinpoet-calculators-demo",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "^6.2.0",
+    "lodash": "^4.17.11",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.3"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^0.0.43",
+    "@types/lodash": "^4.14.117"
+  },
+  "scripts": {
+    "start": "clear; ts-node ./index.ts"
+  }
+}

@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import * as _ from 'lodash'
 import CompositeBlockStorage from '../../src/blockchains/CompositeBlockStorage'
 import BlockStorageFileSystem from '../../src/blockchains/BlockStorageFileSystem'
-import Config from '../../Config'
+import Config from '../../src/Config'
 import BlockStorageZChainApi from '../../src/blockchains/BlockStorageZChainApi'
 
 describe.skip('***** INTEGRATION TESTS *****', function () {

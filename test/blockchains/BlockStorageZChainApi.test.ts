@@ -2,11 +2,7 @@
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import * as _ from 'lodash'
-import { URL } from 'url'
-import * as path from 'path'
-import Config from '../../Config'
 import BlockStorageZChainApi from '../../src/blockchains/BlockStorageZChainApi'
-import { Block } from '../../src/interfaces'
 
 describe('BlockStorageZChainApi', function () {
   let sandbox: sinon.SinonSandbox

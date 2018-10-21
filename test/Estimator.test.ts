@@ -1,13 +1,11 @@
 /* eslint-env mocha */
-import * as path from 'path'
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import * as _ from 'lodash'
 import { BigNumber } from 'bignumber.js'
-import { Block } from '../src/interfaces'
 import { Estimator } from '../src/Estimator'
 import BlockStorageFileSystem from '../src/blockchains/BlockStorageFileSystem'
-import Config from '../Config'
+import Config from '../src/Config'
 
 
 describe('Estimator', function () {
@@ -27,7 +25,6 @@ describe('Estimator', function () {
       let yourHashesPerSecond = new BigNumber(290)
       let networkHashesPerSecond = new BigNumber(492451309)
       let meanNetworkSecondsBetweenBlocks = 147.29166
-      let poolHashesPerSecond = 2436000
       let ZECUSD = 241.23
       let watts = 190
       let electricityCostKwh = 0.1
@@ -41,7 +38,6 @@ describe('Estimator', function () {
       let yourHashesPerSecond = new BigNumber(290)
       let networkHashesPerSecond = new BigNumber(492451309)
       let meanNetworkSecondsBetweenBlocks = 147.29166
-      let poolHashesPerSecond = new BigNumber(2436000)
       let ZECUSD = 241.23
       let watts = 190
       let electricityCostKwh = 0.1

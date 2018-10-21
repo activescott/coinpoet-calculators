@@ -2,9 +2,9 @@ import * as BbPromise from 'bluebird'
 import * as _fs from 'fs'
 import * as path from 'path'
 import * as _ from 'lodash'
-import { BigNumber } from 'bignumber.js'
 import { BlockStorage, Block } from "../interfaces"
 import Diag from '../lib/Diag'
+import JsonBlock from '../lib/JsonBlock'
 
 const fs: any = BbPromise.promisifyAll(_fs)
 const D = new Diag('BlockStorageFileSystem')
@@ -81,27 +81,6 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
       D.error(`Error parsing json in file ${filePath}: ${err.message}`)
       throw err
     }
-    return Promise.resolve(new BlockStorageBlock(this, json))
-  }
-}
-
-class BlockStorageBlock implements Block {
-  readonly hash: string
-  readonly height: number
-  readonly time: number
-  readonly previousBlockHash: string
-  readonly chainWork: BigNumber
-
-  constructor (readonly owningStorage: BlockStorage<Block>, blockJson: any) {
-    this.hash = blockJson.hash
-    this.height = blockJson.height
-    this.time = blockJson.time
-    this.previousBlockHash = blockJson.previousblockhash
-    this.chainWork = new BigNumber('0x' + blockJson.chainwork)
-  }
-
-  previous(): Promise<Block> {
-    if (this.height == 0 || (!this.previousBlockHash)) return null
-    return this.owningStorage.getBlock(this.previousBlockHash)
+    return new JsonBlock(this, json.hash, json.height, json.time, json.previousblockhash, json.chainwork)
   }
 }

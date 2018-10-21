@@ -35,6 +35,9 @@ A library to make various estimates related mining cryptocurrency including time
         + GetNetworkHashPS at https://github.com/zcash/zcash/blob/master/src/rpcmining.cpp#L40 (basically workdiff over 120 blocks)
 
 # IN PROGRESS #
+    - Setup a "npm start" to just ping zcash and output latest estimated stats...
+      - mining time given x ghz, etc.
+
     - Create `BlockStorage` caching implementations that can have a fallback and chained together. 
       + CompositeBlockStorage -> Reads from multiple block storage implementatios falling back to the best one (the one that doesn't fail or the one with the longest chain, etc.)
         + Basic Unit Tests with two mock implementions.
@@ -47,8 +50,7 @@ A library to make various estimates related mining cryptocurrency including time
           - Cache blocks in memory using `height -> Block` map.
           - Cache a small number like ~7 days of blocks (576 per day ~576*7=4K)
     
-    - Setup a "npm start" to just ping zcash and output latest estimated stats...
-      - mining time given x ghz, etc.
+    - Make `BlockStorageFileSystem` default to an empty chain when directory doesn't exist so that it can work with CompositeBlockStorage seamlessly.
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash

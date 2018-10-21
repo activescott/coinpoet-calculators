@@ -6,7 +6,7 @@ import { BlockWithNetworkHashRate, Block } from './interfaces'
 import BlockchainReader from './blockchains/BlockchainReader'
 import BlockStorageFileSystem from './blockchains/BlockStorageFileSystem'
 import * as path from 'path'
-import Config from '../Config'
+import Config from './Config'
 
 const D = new Diag('Estimator')
 
@@ -15,9 +15,27 @@ const D = new Diag('Estimator')
  * This works for equihash and should work for most algorithms as it doesn't get into implementation-specific interpretations of difficulty and hashing algorithms.
  */
 export class Estimator {
+
+  /**
+   * Calculates the average amount of time between mined blocks at the specified block looking back over the specified period of time.
+   * @param block 
+   * @param lookbackCount 
+   */
+  static async meanTimeBetweenBlocks(block: Block, lookbackTimeSpanSeconds: number): Promise<number> {
+    if (!block) throw new Error('block must be provided')
+    if (lookbackTimeSpanSeconds < 1) throw new Error('lookbackTimeSpanSeconds must be greater than zero')
+    let b0 = await block.previous()
+    let lookbackCount = 1
+    while (b0 && block.time - b0.time < lookbackTimeSpanSeconds) {
+      b0 = await b0.previous()
+      lookbackCount++
+    }
+    return (block.time - b0.time) / lookbackCount
+  }
+
   /**
    * Estimates the earnings for the given hash rate and given network information for a single day.
-   * Essentially this is the same as `estimateNetworkHashRateChangePerDay` but for a single day.
+   * Essentially this is the same as @see estimateFutureEarnings but for a single day.
    */
   static dailyEarnings (yourHashesPerSecond: BigNumber,
                   networkHashesPerSecond: BigNumber,
@@ -123,7 +141,7 @@ export class Estimator {
   }
 
   /**
-   * Returns a clone of the specified with the `networkHashRate` property added.
+   * Returns a clone of the specified block with the `networkHashRate` property added.
    * @param block A block to add hashrate to.
    * @param reader A reader for the speicifed block to get additional block chain info from.
    */
@@ -148,6 +166,7 @@ export class Estimator {
     return changeInHasRatePS.dividedBy(periodInDays.toFixed(4)) // Because BigNumber throws if >15 significant digits
   }
 
+  // TODO: This function is more of a demo of using the primatives above and should be moved somewhere else.
   static async estimateDailyChangeInNetworkHashRateZCash (from: Date, to: Date): Promise<BigNumber> {
     let reader = new BlockchainReader(new BlockStorageFileSystem(Config.zcashBlocksPath))
     let chain = await reader.subset(from, to)
