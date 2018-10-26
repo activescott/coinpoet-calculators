@@ -1,6 +1,6 @@
-# coinpoet-cryptocurrency-mining-estimators
+# coinpoet-calculators
 
-A library to make various estimates related mining cryptocurrency including time to mine blocks and projecting future difficulty.
+A library for analyzing blockchain to estimate cryptocurrency-mining related information like time to mine blocks, future difficulty, and future earnings.
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
