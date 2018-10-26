@@ -1,9 +1,9 @@
 {
-  "name": "coinpoet-cryptocurrency-mining-estimators",
+  "name": "coinpoet-calculators",
   "description": "A library to make various estimates related mining cryptocurrency including time to mine blocks and projecting future difficulty.",
   "version": "0.0.1",
   "repository": "tbd",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.ts",
   "scripts": {
@@ -22,8 +22,9 @@
   },
   "dependencies": {
     "@types/bigi": "^1.4.0",
+    "@types/bignumber.js": "^5.0.0",
     "@types/chai-as-promised": "^7.1.0",
-    "bignumber.js": "^6.0.0",
+    "bignumber.js": "^7.2.1",
     "bluebird": "^3.5.1",
     "cross-fetch": "^2.1.0",
     "lodash": "^4.17.5",

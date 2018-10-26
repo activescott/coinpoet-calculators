@@ -4,6 +4,8 @@
   "main": "index.ts",
   "license": "MIT",
   "dependencies": {
+    "@types/bignumber.js": "^5.0.0",
+    "bignumber.js": "^7.2.1",
     "inquirer": "^6.2.0",
     "lodash": "^4.17.11",
     "ts-node": "^7.0.1",

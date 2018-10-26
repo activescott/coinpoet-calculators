@@ -29,7 +29,7 @@ export default class CompositeBlockStorage extends BlockStorage<Block> {
     try {
       primaryValue = await _.invoke(this.primary, path, ...args)
     } catch (err) {
-      D.warn(
+      D.info(
         `Error invoking ${path} on primary with args`,
         args,
         ". Note this is probably fine as the secondary may respond. The error was:",

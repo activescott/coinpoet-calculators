@@ -1,11 +1,8 @@
 import { BigNumber } from "bignumber.js"
 import { prompt } from "inquirer"
 import * as _ from "lodash"
-import { Estimator } from "../src"
-import { ZCashReader } from "../src"
-import Diag, { LogLevel } from "../src/lib/Diag"
-
-Diag.Level = LogLevel.DEBUG
+import { Estimator } from "../src/Estimator"
+import { ZCashReader } from "../src/index"
 
 // Demonstration of the coinpoet-calculators high-level capabilities
 
@@ -42,6 +39,7 @@ async function main() {
       )
       console.log("average time between blocks:", val)
     },
+    // TODO: The fact that we're declaring this type here makes me think we should put this in the library and put all params on it for @see Estimator.estimateFutureEarnings so the user doesn't have to declare it.
     "my future earnings": async answers => {
       type EParams = {
         networkHashesPerSecond: BigNumber
