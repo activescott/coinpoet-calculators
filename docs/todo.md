@@ -1,14 +1,8 @@
 - Do travis-ci.org
+  - Put a minimal number of zcash blocks in a test-data dir to run unit tests. Something like ~100 1000 blocks
+- Code coverage
 - Have Estimator.estimateFutureEarnings accept a typed "options" param instead of individual params. It is gross to build up the params in the demo/index.ts.
 - Shut up BlockStorageFileSystem's error logging when used via composite. Pass in a param to have it not log errors.
-- Remove the exported ZCashReader and create in the demo instead. Leave the main library primitives only for now.
-
-* Move this todo list to a /docs/todo file
-* Move "references" to a /docs/notes folder?
-
-- Refine description and readme
-
-- Code coverage
 - Cleanup test-data/genTestDataZcash.ts (move it to a better dir and make it a more clean, callable API)
 
 - Create `BlockStorage` caching implementations that can have a fallback and chained together.
