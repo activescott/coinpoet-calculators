@@ -23,8 +23,8 @@ Unstable. All interfaces/classes subject to change.
 
 # Usage / Example
 
-See [/demo/index.ts](blob/master/demo/index.ts)
+See [/demo/index.ts](demo/index.ts)
 
 # Todo / Roadmap
 
-see [/docs/todo.md](blob/master/docs/todo.md)
+see [/docs/todo.md](docs/todo.md)
