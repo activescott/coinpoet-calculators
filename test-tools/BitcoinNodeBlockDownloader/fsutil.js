@@ -1,12 +1,12 @@
-'use strict'
-const path = require('path')
-const fs = require('fs')
+"use strict"
+const path = require("path")
+const fs = require("fs")
 
 /**
  * Cleans the specified directory by deleting all contents but making sure the directory exists.
  * @param {string} dir The directory to clean.
  */
-function cleanDir (outDir) {
+function cleanDir(outDir) {
   if (fs.existsSync(outDir)) {
     rmdir(outDir)
   }
@@ -16,9 +16,9 @@ function cleanDir (outDir) {
 /**
  * Makes the specified directory and all parent directories as needed.
  */
-function mkdir (dirname) {
+function mkdir(dirname) {
   let dirs = dirname.split(path.sep)
-  if (dirs[0] === '') {
+  if (dirs[0] === "") {
     // first was a rooted dir
     dirs = dirs.slice(1)
     dirs[0] = path.sep + dirs[0]
@@ -34,13 +34,13 @@ function mkdir (dirname) {
 /**
  * Recursively removes the directory and all of its contents.
  */
-function rmdir (dir) {
+function rmdir(dir) {
   let list = fs.readdirSync(dir)
   for (let i = 0; i < list.length; i++) {
     let filename = path.join(dir, list[i])
     let stat = fs.statSync(filename)
 
-    if (filename === '.' || filename === '..') {
+    if (filename === "." || filename === "..") {
       // pass these files
     } else if (stat.isDirectory()) {
       // rmdir recursively

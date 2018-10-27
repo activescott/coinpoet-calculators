@@ -1,0 +1,16 @@
+{
+  "name": "bitcoin-node-block-downloader",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "node-fetch": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.117",
+    "@types/node": "^10.12.0",
+    "@types/node-fetch": "^2.1.2",
+    "ts-node": "^7.0.1"
+  }
+}
