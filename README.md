@@ -1,6 +1,7 @@
 # coinpoet-calculators
 
 [![Build Status](https://travis-ci.org/activescott/coinpoet-calculators.svg?branch=master)](https://travis-ci.org/activescott/coinpoet-calculators)
+[![Coverage Status](https://coveralls.io/repos/github/activescott/coinpoet-calculators/badge.svg?branch=master)](https://coveralls.io/github/activescott/coinpoet-calculators?branch=master)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 
