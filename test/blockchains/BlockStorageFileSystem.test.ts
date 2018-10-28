@@ -11,7 +11,7 @@ describe("BlockStorageFileSystem", function() {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    bsfs = new BlockStorageFileSystem(Config.zcashBlocksPath)
+    bsfs = new BlockStorageFileSystem(Config.zcashTinyTestDataBlocksPath)
   })
 
   afterEach(() => {
@@ -43,6 +43,40 @@ describe("BlockStorageFileSystem", function() {
         "000000000899b1bf24331b35b500089d75318a46abdf08644609918e68134c3f"
       )
       expect(b).to.have.property("height", 334480)
+    })
+  })
+
+  describe("throwAndLogOnMissingFiles = false", async function() {
+    describe("getBlockCount", async function() {
+      it("should not throw", async function() {
+        bsfs = new BlockStorageFileSystem(Config.emptyDirPath, false)
+        return expect(bsfs.getBlockCount()).to.eventually.equal(0)
+      })
+    })
+
+    describe("getBlockHash", async function() {
+      it("should not throw", async function() {
+        bsfs = new BlockStorageFileSystem(Config.emptyDirPath, false)
+        return expect(bsfs.getBlockHash(100)).to.eventually.be.null
+      })
+    })
+
+    describe("getBlock", async function() {
+      it("should not throw", async function() {
+        bsfs = new BlockStorageFileSystem(Config.emptyDirPath, false)
+        return expect(
+          bsfs.getBlock(
+            "000000000899b1bf24331b35b500089d75318a46abdf08644609918e68134c3f"
+          )
+        ).to.eventually.be.null
+      })
+    })
+
+    describe("constructor", async function() {
+      it("should not throw on non-existing path", async function() {
+        expect(new BlockStorageFileSystem("/tmp/does/not/exist/path", false)).to
+          .not.throw
+      })
     })
   })
 })

@@ -48,13 +48,16 @@ export default class BlockchainReader {
   }
 
   async search(soughtTime: number): Promise<Block> {
-    let best: Block
+    let best: Block = null
     let left, mid, right
     right = (await this.storage.getBlockCount()) - 1
     left = 0
     while (left <= right) {
       mid = Math.floor((left + right) / 2)
       best = await this.storage.getBlockFromHeight(mid)
+      if (!best) {
+        throw new Error(`Storage returned null block for height ${mid}`)
+      }
       if (best.time < soughtTime) {
         left = mid + 1
       } else if (best.time > soughtTime) {

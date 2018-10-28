@@ -7,6 +7,7 @@ import Config from "../../src/Config"
 import BlockchainReader from "../../src/blockchains/BlockchainReader"
 import BlockStorageFileSystem from "../../src/blockchains/BlockStorageFileSystem"
 import BlockStorageZChainApi from "../../src/blockchains/BlockStorageZChainApi"
+import { MockBlockStorage } from "../mocks/MockBlockStorage"
 
 describe("BlockchainReader", function() {
   let sandbox: sinon.SinonSandbox
@@ -14,12 +15,16 @@ describe("BlockchainReader", function() {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    if (existsSync(Config.zcashScottsPath)) {
+    if (existsSync(Config.zcashLargeTestDataPath)) {
       reader = new BlockchainReader(
-        new BlockStorageFileSystem(Config.zcashScottsPath)
+        new BlockStorageFileSystem(Config.zcashLargeTestDataPath)
       )
     } else {
       // This one is damn slow but the tests will at least pass:
+      console.log("********** ********** ********** **********")
+      console.log("Local ZCash blocks not available.")
+      console.log("Fallling back to SLOOOOOW ZChain API.")
+      console.log("********** ********** ********** **********")
       reader = new BlockchainReader(new BlockStorageZChainApi())
     }
   })
@@ -42,7 +47,7 @@ describe("BlockchainReader", function() {
   describe("subset", function() {
     it("should work with exact start/end block times", async function() {
       this.timeout(5000)
-      if (!existsSync(Config.zcashScottsPath)) {
+      if (!existsSync(Config.zcashLargeTestDataPath)) {
         this.skip()
       }
 
@@ -72,7 +77,7 @@ describe("BlockchainReader", function() {
 
     it("should read to first block", async function() {
       this.timeout(5000)
-      if (!existsSync(Config.zcashScottsPath)) {
+      if (!existsSync(Config.zcashLargeTestDataPath)) {
         this.skip()
       }
       // deliberately old date will require reading to oldest block
@@ -80,6 +85,21 @@ describe("BlockchainReader", function() {
       return expect(chain.oldestBlock).has.property(
         "hash",
         "00040fe8ec8471911baa1db1266ea15dd06b4a8a5c453883c000b031973dce08"
+      )
+    })
+
+    it("should handle a misbehaving BlockStorage that returns null block", async function() {
+      let mockStorage = sandbox.createStubInstance<MockBlockStorage>(
+        MockBlockStorage
+      )
+      mockStorage.getBlockCount.resolves(10)
+      mockStorage.getBlockHash.resolves(null)
+      mockStorage.getBlock.resolves(null)
+
+      reader = new BlockchainReader(mockStorage)
+      let chainPromise = reader.subset(new Date(1900, 1, 1), new Date())
+      return expect(chainPromise).to.be.rejectedWith(
+        /Storage returned null block for height \d+/
       )
     })
 

@@ -20,11 +20,17 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
    * Creates a new instance of @see BlockStorageFileSystem.
    * The directory should contain files named like <height>.json where <height> is the height of the block and the file contains the header for that block as JSON.
    * @param dirPath {string} The path to the directory containing the blocks.
+   * @param throwAndLogOnMissingFiles {boolean} Set to false to prevent throwing and logging errors when a requested block is missing.
    */
-  constructor(readonly dirPath: string) {
+  constructor(
+    readonly dirPath: string,
+    readonly throwAndLogOnMissingFiles = true
+  ) {
     super()
-    if (!fs.existsSync(dirPath))
-      throw new Error(`The path ${dirPath} does not exist.`)
+    if (throwAndLogOnMissingFiles) {
+      if (!fs.existsSync(dirPath))
+        throw new Error(`The path ${dirPath} does not exist.`)
+    }
     D.debug("using path:", this.dirPath)
   }
 
@@ -32,20 +38,21 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
     const files = await fs.readdirAsync(this.dirPath)
     let m = _(files)
       .map(f => Number.parseInt(path.basename(f, ".json")))
+      .map(v => (_.isInteger(v) ? v : -1))
       .max()
     return m + 1
   }
 
   async getBlockHash(height: number): Promise<string> {
     let b = await this.loadBlockFile(height)
-    return b.hash
+    return b ? b.hash : null
   }
 
   async getBlock(blockHash: string): Promise<Block> {
     let height = await this.lookupHeightFromHash(blockHash)
-    if (height !== 0 && !height)
-      throw new Error(`Block hash '${blockHash}' not found.`)
-    return this.loadBlockFile(height)
+    return _.isInteger(height) && height >= 0
+      ? this.loadBlockFile(height)
+      : null
   }
 
   private async lookupHeightFromHash(blockHash: string): Promise<number> {
@@ -55,8 +62,12 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
     try {
       str = await fs.readFileAsync(filePath)
     } catch (err) {
-      D.warn(`Error reading hash index file ${filePath}: ${err.message}`)
-      throw err
+      if (this.throwAndLogOnMissingFiles) {
+        D.warn(`Error reading hash index file ${filePath}: ${err.message}`)
+        throw err
+      } else {
+        return null
+      }
     }
     let num
     try {
@@ -73,8 +84,12 @@ export default class BlockStorageFileSystem extends BlockStorage<Block> {
     try {
       str = await fs.readFileAsync(filePath)
     } catch (err) {
-      D.warn(`Error reading file ${filePath}: ${err.message}`)
-      throw err
+      if (this.throwAndLogOnMissingFiles) {
+        D.warn(`Error reading file ${filePath}: ${err.message}`)
+        throw err
+      } else {
+        return null
+      }
     }
     let json
     try {

@@ -38,7 +38,6 @@ async function main() {
       )
       console.log("average time between blocks:", val)
     },
-    // TODO: The fact that we're declaring this type here makes me think we should put this in the library and put all params on it for @see Estimator.estimateFutureEarnings so the user doesn't have to declare it.
     "my future earnings": async answers => {
       let earningsParms: EstimateFutureEarningsOptions = await prompt<
         EstimateFutureEarningsOptions

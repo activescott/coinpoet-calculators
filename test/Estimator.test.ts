@@ -79,11 +79,11 @@ describe("Estimator", function() {
 
   describe("estimateDailyChangeInNetworkHashRate", function() {
     it("estimateNetworkHashRate", async function() {
-      if (!existsSync(Config.zcashScottsPath)) {
+      if (!existsSync(Config.zcashLargeTestDataPath)) {
         this.skip()
         return
       }
-      let bs = new BlockStorageFileSystem(Config.zcashScottsPath)
+      let bs = new BlockStorageFileSystem(Config.zcashLargeTestDataPath)
       let testBlock = await bs.getBlockFromHeight(334000)
       let val = await Estimator.estimateNetworkHashRate(testBlock, 120)
       console.log("val:", val.toFixed(0))

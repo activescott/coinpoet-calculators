@@ -2,27 +2,24 @@
   + Put a minimal number of zcash blocks in a test-data dir to run unit tests. Something like ~100 1000 blocks
 + Code coverage
 + Have Estimator.estimateFutureEarnings accept a typed "options" param instead of individual params. It is gross to build up the params in the demo/index.ts.
-- Shut up BlockStorageFileSystem's error logging when used via composite. Pass in a param to have it not log errors.
-- Switch to AVA for faster testing: https://github.com/avajs/ava
++ Shut up BlockStorageFileSystem's error logging when used via composite. Pass in a param to have it not log errors.
+
 - Create `BlockStorage` caching implementations that can have a fallback and chained together.
-
-  - CompositeBlockStorage -> Reads from multiple block storage implementatios falling back to the best one (the one that doesn't fail or the one with the longest chain, etc.)
-    - Basic Unit Tests with two mock implementions.
-    - Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
-  - LruBlockStorage -> Least recently used block storage that caches ~5K blocks?
-
-  * ZcashNodeRpcBlockStorage - reads directly from a zcash node's RPC interface.
-  * The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
+  + CompositeBlockStorage -> Reads from multiple block storage implementatios falling back to the best one (the one that doesn't fail or the one with the longest chain, etc.)
+    + Basic Unit Tests with two mock implementions.
+    + Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
+  + LruBlockStorage -> Least recently used block storage that caches ~5K blocks?
+  - ZcashNodeRpcBlockStorage - reads directly from a zcash node's RPC interface.
+  - The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
     - Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
       - Cache blocks in memory using `height -> Block` map.
       - Cache a small number like ~7 days of blocks (576 per day ~576\*7=4K)
 
 - Web demo
-
   - via zeit now
 
-- Make `BlockStorageFileSystem` default to an empty chain when directory doesn't exist so that it can work with CompositeBlockStorage seamlessly.
-  - Test.
++ Make `BlockStorageFileSystem` default to an empty chain when directory doesn't exist so that it can work with CompositeBlockStorage seamlessly.
+  + Test.
 
 - Have Diag detect log level via environment variable like DIAG*LOG_LEVEL*<PREFIX>
 - Add time & timeEnd to Diag: https://nodejs.org/api/console.html#console_console_timelog_label_data
