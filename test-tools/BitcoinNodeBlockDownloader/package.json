@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.ts",
   "license": "MPL-2.0",
+  "scripts": {
+    "start": "./node_modules/.bin/ts-node index.ts"
+  },
   "dependencies": {
+    "commander": "^2.19.0",
     "lodash": "^4.17.11",
     "node-fetch": "^2.2.0"
   },

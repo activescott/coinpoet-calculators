@@ -1,10 +1,12 @@
 import * as path from "path"
 import * as _fs from "fs"
 import { existsSync, statSync } from "fs"
+import { inspect } from "util"
 import fetch from "node-fetch"
 import Diag from "../../src/lib/Diag"
-import { mkdir } from "./fsutil"
+import { mkdir, rmdir } from "./fsutil"
 import * as _ from "lodash"
+import * as program from "commander"
 
 const D = new Diag("BitcoinNodeBlockDownloader")
 
@@ -36,37 +38,39 @@ export class BitcoinNodeBlockDownloader {
    * @param maxBlockHeight 0 to get the highest block and all preceeding. Or the max height of a block to get and work back from.
    * @param blockCount The number of blocks to download (working backwards from maxBlockHeight).
    */
-  public async download(maxBlockHeight = 0, blockCount = 0) {
+  public async download(highestBlockHeight = 0, blockCount = 0) {
     try {
       if (!existsSync(this.indexDir)) {
         D.log("Creating indexDir", this.indexDir, "...")
         mkdir(this.indexDir)
         D.log("Creating indexDir complete.")
       }
-      if (maxBlockHeight === 0) {
-        maxBlockHeight = await this.getBlockCount()
+      if (highestBlockHeight === 0) {
+        highestBlockHeight = await this.getBlockCount()
         if (blockCount === 0) {
-          blockCount = maxBlockHeight + 1
+          blockCount = highestBlockHeight + 1
         }
       }
       let blocksDownloaded = 0
       console.log("Getting current blockheight")
-      let height = maxBlockHeight
+      let height = highestBlockHeight
       let pendingPromises = []
       const BATCH_SIZE = Math.min(15, blockCount)
-      while (height >= 0) {
+      while (highestBlockHeight - height < blockCount) {
         let dest = path.join(this.localDir, `${height}.json`)
         if (!existsSync(dest)) {
           console.log("Fetching header at height", height)
           const headerPromise = this.getBlockHeaderFromHeight(height)
           headerPromise
             .then(async header => {
-              console.log("Writing header to file", dest)
-              return fs
-                .writeFile(dest, JSON.stringify(header))
-                .then(() => header)
+              if (!header)
+                throw new Error("Attempting to write empty header to file")
+              console.error("Writing header to file", dest)
+              await fs.writeFile(dest, JSON.stringify(header))
+              return header
             })
             .then(header => {
+              if (!header) throw new Error("WTF header not there??")
               return this.addIndexFile(header)
             })
             .catch(err => {
@@ -78,15 +82,15 @@ export class BitcoinNodeBlockDownloader {
           console.log(`File ${dest} exists. Skipping...`)
         }
         height--
-        if ((maxBlockHeight - height) % BATCH_SIZE == 0) {
+        if ((highestBlockHeight - height) % BATCH_SIZE == 0) {
           if (pendingPromises.length > 0) {
             console.log(`Awaiting ${pendingPromises.length} promises...`)
             await Promise.all(pendingPromises)
-            blocksDownloaded += pendingPromises.length
-            if (blocksDownloaded >= blockCount) {
-              break
-            }
             pendingPromises = []
+          }
+          if (highestBlockHeight - height >= blockCount) {
+            // we've downloaded the maximum number of blocks, so stop
+            break
           }
           /*if (height + BATCH_SIZE >= max_block_height) {
             console.log('Fetching fresh block count')
@@ -100,18 +104,43 @@ export class BitcoinNodeBlockDownloader {
     }
   }
 
-  private async rpcRequest(method: string, ...params) {
+  private async rpcRequest(method: string, ...params): Promise<any> {
     params = params || []
-    let resp = await fetch(this.nodeUrl, {
-      body: JSON.stringify({ jsonrpc: "1.0", method: method, params: params }),
-      headers: {
-        "content-type": "text/plain",
-        Authorization:
-          "Basic " + Buffer.from("activescott:123456").toString("base64")
-      },
-      method: "POST"
-    })
-    return resp.json()
+    let rpcResultStr: string
+    try {
+      let resp = await fetch(this.nodeUrl, {
+        body: JSON.stringify({
+          jsonrpc: "1.0",
+          method: method,
+          params: params
+        }),
+        headers: {
+          "content-type": "text/plain",
+          Authorization:
+            "Basic " + Buffer.from("activescott:123456").toString("base64")
+        },
+        method: "POST"
+      })
+      rpcResultStr = await resp.text()
+    } catch (err) {
+      let msg = `Error fetching RPC method ${method} with args ${inspect(
+        params
+      )}. Result was: ${rpcResultStr}`
+      console.error(msg)
+      throw new Error(msg)
+    }
+    let parsed: any
+    try {
+      parsed = JSON.parse(rpcResultStr)
+    } catch (err) {
+      throw new Error(
+        `Error parsing JSON result for RPC method ${method} with args ${inspect(
+          params
+        )}. Result was: ${rpcResultStr}`
+      )
+    }
+    // console.debug(`rpcRequest ${method} (${inspect(params)}):`, parsed)
+    return Promise.resolve(parsed)
   }
 
   private async getBlockCount() {
@@ -120,10 +149,18 @@ export class BitcoinNodeBlockDownloader {
   }
 
   private async getBlockHeaderFromHeight(height: number) {
+    if (!_.isInteger(height)) {
+      throw new Error(`height must be an integer but was ${inspect(height)}`)
+    }
     let json = await this.rpcRequest("GetBlockHash".toLocaleLowerCase(), height)
     let hash = json.result
     json = await this.rpcRequest("GetBlockHeader".toLocaleLowerCase(), hash)
     const header = json.result
+    if (!header) {
+      throw new Error(
+        `Failed to read header from node for block height ${height}.`
+      )
+    }
     return header
   }
 
@@ -200,16 +237,51 @@ export class BitcoinNodeBlockDownloader {
 
 if (require.main === module) {
   // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
-  let testDataPath = path.join(
+  let defaultDataPath = path.join(
     path.dirname(module.filename),
-    "..",
-    "..",
-    "test-data"
+    "../../test-data/zcash-blocks"
   )
-  console.log("testDataPath:", testDataPath)
-  let downloader = new BitcoinNodeBlockDownloader(
-    testDataPath,
-    "http://localhost:32771"
-  )
-  downloader.download(0, 10).then(() => console.log("download finished!"))
+
+  program
+    .command("download")
+    .option(
+      "-d, --dir [dir]",
+      "Directory to download blocks to.",
+      defaultDataPath
+    )
+    .option(
+      "-n, --node [http url]",
+      "The http path to the rpc endpoint on the Bitcoin Node.",
+      "http://localhost:32771"
+    )
+    .option(
+      "-b, --blockheight [blockheight]",
+      "Maximum/highest block to start downloading from. By default the height of the full nodes blockchain.",
+      parseInt,
+      0
+    )
+    .option(
+      "-c, --count [count]",
+      "The number of blocks to download (starting at the max/highest block)",
+      parseInt,
+      0
+    )
+    .option("--clean", "Delete the existing files")
+    .action(cmd => {
+      // console.log('cmd:', cmd)
+      console.log("\ndownload:")
+      for (let option of ["dir", "node", "blockheight", "count", "clean"]) {
+        console.log(` ${option}:`, cmd[option])
+      }
+      console.log("")
+
+      if (cmd.clean) {
+        rmdir(cmd.dir)
+      }
+      let downloader = new BitcoinNodeBlockDownloader(cmd.dir, cmd.node)
+      downloader
+        .download(cmd.blockheight, cmd.count)
+        .then(() => console.log("download finished!"))
+    })
+  program.parse(process.argv)
 }

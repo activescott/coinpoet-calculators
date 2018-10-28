@@ -1,8 +1,6 @@
 {
   "files.exclude": {
-    "test-data/zcash-blocks/**": true
+    "test-data/zcash-blocks/**": false
   },
-  "cSpell.words": [
-    "bsfs"
-  ]
+  "cSpell.words": ["bsfs"]
 }

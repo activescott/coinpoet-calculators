@@ -3,8 +3,7 @@
 - Code coverage
 - Have Estimator.estimateFutureEarnings accept a typed "options" param instead of individual params. It is gross to build up the params in the demo/index.ts.
 - Shut up BlockStorageFileSystem's error logging when used via composite. Pass in a param to have it not log errors.
-- Cleanup test-data/genTestDataZcash.ts (move it to a better dir and make it a more clean, callable API)
-
+- Switch to AVA for faster testing: https://github.com/avajs/ava
 - Create `BlockStorage` caching implementations that can have a fallback and chained together.
 
   - CompositeBlockStorage -> Reads from multiple block storage implementatios falling back to the best one (the one that doesn't fail or the one with the longest chain, etc.)

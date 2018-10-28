@@ -230,20 +230,4 @@ export class Estimator {
     )
     return changeInHasRatePS.dividedBy(periodInDays.toFixed(4)) // Because BigNumber throws if >15 significant digits
   }
-
-  // TODO: This function is more of a demo of using the primatives above and should be moved somewhere else.
-  static async estimateDailyChangeInNetworkHashRateZCash(
-    from: Date,
-    to: Date
-  ): Promise<BigNumber> {
-    let reader = new BlockchainReader(
-      new BlockStorageFileSystem(Config.zcashBlocksPath)
-    )
-    let chain = await reader.subset(from, to)
-    // get hashrate for "from" block:
-    let fromBlock = await Estimator.blockWithNetworkHashRate(chain.oldestBlock)
-    // get hashrate for "to" block:
-    let toBlock = await Estimator.blockWithNetworkHashRate(chain.newestBlock)
-    return Estimator.estimateDailyChangeInNetworkHashRate(fromBlock, toBlock)
-  }
 }
