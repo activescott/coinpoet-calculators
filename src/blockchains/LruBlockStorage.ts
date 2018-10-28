@@ -1,7 +1,7 @@
 import { Block, BlockStorage } from "../interfaces"
 
 import Diag from "../lib/Diag"
-import Lru from "../lib/Lru"
+import LruCache from "../lib/LruCache"
 
 const D = new Diag("LruBlockStorage")
 
@@ -11,8 +11,8 @@ const blocksPerDay = secondsPerDay / blockTime
 const maxCacheItems = blocksPerDay * 7
 
 export default class LruBlockStorage extends BlockStorage<Block> {
-  private readonly heightToHashCache: Lru<number, Promise<string>>
-  private readonly hashToBlockCache: Lru<string, Promise<Block>>
+  private readonly heightToHashCache: LruCache<number, Promise<string>>
+  private readonly hashToBlockCache: LruCache<string, Promise<Block>>
 
   constructor(
     private readonly realStorage: BlockStorage<Block>,
@@ -22,17 +22,20 @@ export default class LruBlockStorage extends BlockStorage<Block> {
     if (!this.realStorage) {
       throw new Error("realStorage must be provided")
     }
-    this.heightToHashCache = new Lru<number, Promise<string>>(
+    this.heightToHashCache = new LruCache<number, Promise<string>>(
       maxSize,
       height => {
         D.debug("caching", height)
         return realStorage.getBlockHash(height)
       }
     )
-    this.hashToBlockCache = new Lru<string, Promise<Block>>(maxSize, hash => {
-      D.debug("caching", hash)
-      return realStorage.getBlock(hash)
-    })
+    this.hashToBlockCache = new LruCache<string, Promise<Block>>(
+      maxSize,
+      hash => {
+        D.debug("caching", hash)
+        return realStorage.getBlock(hash)
+      }
+    )
   }
 
   get size() {

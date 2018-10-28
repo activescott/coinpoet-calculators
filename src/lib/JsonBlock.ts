@@ -19,23 +19,26 @@ export default class JsonBlock implements Block {
     readonly chainWorkString: string
   ) {
     if (!owningStorage) throw new Error("owningStorage must be provided")
-    if (_.isEmpty(hash)) throw new Error("empty block hash")
-    if (height < 0) throw new Error("invalid block height")
+    if (_.isEmpty(hash)) throw new Error("block hash must be provided")
+    if (!_.isInteger(height)) throw new Error("block height must be an integer")
+    if (height < 0) throw new Error("block height must be a positive integer")
     const MILLISECONDS_PER_SECOND = 1000
     const blockTimestamp = new Date(time * MILLISECONDS_PER_SECOND)
-    if (blockTimestamp < new Date(2000, 1, 1)) {
+    if (blockTimestamp < new Date(2009, 1, 3)) {
       throw new Error(
-        `Expected block time to be later than year 2000, but found ${blockTimestamp}.`
+        `Expected block time to be later than year 2009, but found ${blockTimestamp}.`
       )
     }
     // NOTE: previousBlockHash is okay to be empty for block 0
     if (_.isEmpty(previousBlockHash) && height > 0)
-      throw new Error(`invalid previousBlockHash: ${previousBlockHash}`)
+      throw new Error(
+        `previousBlockHash must be provided: ${previousBlockHash}`
+      )
     this.chainWork = new BigNumber("0x" + chainWorkString)
   }
 
-  previous(): Promise<Block> {
-    if (this.height == 0 || !this.previousBlockHash) return null
+  async previous(): Promise<Block> {
+    if (this.height == 0) return null
     return this.owningStorage.getBlock(this.previousBlockHash)
   }
 }

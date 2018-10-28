@@ -1,8 +1,8 @@
 import Diag from "./Diag"
 
-const D = new Diag("Lru")
+const D = new Diag("LruCache")
 
-export default class Lru<TKey, TValue> {
+export default class LruCache<TKey, TValue> {
   // most recently accessed node
   private head: LruNode<TKey, TValue> = null
   private tail: LruNode<TKey, TValue> = null
@@ -59,11 +59,6 @@ export default class Lru<TKey, TValue> {
     if (!node) {
       // D.debug('Lru cache miss for key', key)
       let val = this.getter(key)
-      if (!val) {
-        // don't cache nully values
-        D.info("getter returned null value for key:", key)
-        return val
-      }
       node = new LruNode(key, val)
       this.map.set(key, node)
     } else {
@@ -108,27 +103,8 @@ class LruNode<TKey, TValue> {
 
   public insertYourselfBefore(beforeNode) {
     if (!beforeNode) return
-    // ignore request to insert before ourselves:
-    if (this === beforeNode) return
-    // ignore if we're already before it:
-    if (beforeNode.previous === this) return
     let myPrevious = beforeNode.previous
     let myNext = beforeNode
-    if (myPrevious) myPrevious.next = this
-    if (myNext) myNext.previous = this
-    this.previous = myPrevious
-    this.next = myNext
-  }
-
-  public insertYourselfAfter(afterNode) {
-    if (!afterNode) return
-    // ignore request to insert after ourselves
-    if (this === afterNode) return
-    // ignore if we're already after it:
-    if (afterNode.next === this) return
-    let myPrevious = afterNode
-    let myNext = afterNode.next
-    if (myPrevious) myPrevious.next = this
     if (myNext) myNext.previous = this
     this.previous = myPrevious
     this.next = myNext

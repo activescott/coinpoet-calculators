@@ -21,8 +21,11 @@
 + Make `BlockStorageFileSystem` default to an empty chain when directory doesn't exist so that it can work with CompositeBlockStorage seamlessly.
   + Test.
 
-- Have Diag detect log level via environment variable like DIAG*LOG_LEVEL*<PREFIX>
-- Add time & timeEnd to Diag: https://nodejs.org/api/console.html#console_console_timelog_label_data
+- Put Diag in it's own NPM Package. Using it from several places.
+  - Add tests for Diag (AVA)
+  - Have Diag detect log level via environment variable like DIAG*LOG_LEVEL*<PREFIX>
+  - Add time & timeEnd to Diag: https://nodejs.org/api/console.html#console_console_timelog_label_data
+  - Coveralls & travis for Diag
 
 - improve code coverage
 
@@ -32,7 +35,6 @@
 - Ethereum Classic
 - Bitcoin Support (good for testing and comparing to many other tools out there)
 - Monero Support
-
   - Note no chainWork: https://getmonero.org/resources/developer-guides/daemon-rpc.html#getlastblockheader
     - This is perfectly fine since we only care about the relative change in chainWork between two blocks. So we can read a subset of the block chain to determine this. Just start the first one with chainWork=difficulty
     - NOTE: Monero calculates difficulty for each block based on the most recent 720 blocks existing difficulty and block time.
