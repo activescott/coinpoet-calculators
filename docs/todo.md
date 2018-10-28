@@ -1,6 +1,6 @@
 + Do travis-ci.org
   + Put a minimal number of zcash blocks in a test-data dir to run unit tests. Something like ~100 1000 blocks
-- Code coverage
++ Code coverage
 - Have Estimator.estimateFutureEarnings accept a typed "options" param instead of individual params. It is gross to build up the params in the demo/index.ts.
 - Shut up BlockStorageFileSystem's error logging when used via composite. Pass in a param to have it not log errors.
 - Switch to AVA for faster testing: https://github.com/avajs/ava
@@ -22,9 +22,12 @@
   - via zeit now
 
 - Make `BlockStorageFileSystem` default to an empty chain when directory doesn't exist so that it can work with CompositeBlockStorage seamlessly.
+  - Test.
 
 - Have Diag detect log level via environment variable like DIAG*LOG_LEVEL*<PREFIX>
 - Add time & timeEnd to Diag: https://nodejs.org/api/console.html#console_console_timelog_label_data
+
+- improve code coverage
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash

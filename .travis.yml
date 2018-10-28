@@ -3,3 +3,4 @@ node_js:
   - "10"
   - "node"
 cache: yarn
+after_success: yarn run coverage

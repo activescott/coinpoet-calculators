@@ -1,8 +1,8 @@
+# coinpoet-calculators
+
 [![Build Status](https://travis-ci.org/activescott/coinpoet-calculators.svg?branch=master)](https://travis-ci.org/activescott/coinpoet-calculators)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-
-# coinpoet-calculators
 
 A library for analyzing blockchain to estimate cryptocurrency-mining related information like time to mine blocks, future difficulty, and future earnings.
 
