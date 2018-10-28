@@ -1,16 +1,16 @@
 /* eslint-env mocha */
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
-import { expect } from 'chai'
-import * as sinon from 'sinon'
-import * as _ from 'lodash'
-import CompositeBlockStorage from '../../src/blockchains/CompositeBlockStorage'
-import { MockBlockStorage } from '../Mocks/MockBlockStorage'
-import { MockBlock } from '../Mocks/MockBlock'
+import * as chai from "chai"
+import * as chaiAsPromised from "chai-as-promised"
+import { expect } from "chai"
+import * as sinon from "sinon"
+import * as _ from "lodash"
+import CompositeBlockStorage from "../../src/blockchains/CompositeBlockStorage"
+import { MockBlockStorage } from "../mocks/MockBlockStorage"
+import { MockBlock } from "../mocks/MockBlock"
 
-chai.use(chaiAsPromised);
+chai.use(chaiAsPromised)
 
-describe('CompositeBlockStorage', function () {
+describe("CompositeBlockStorage", function() {
   let sandbox: sinon.SinonSandbox
   let bs: CompositeBlockStorage
 
@@ -23,19 +23,19 @@ describe('CompositeBlockStorage', function () {
     sandbox = null
   })
 
-  describe('getBlockCount', function () {
-    it('should use max from primary', async function () {
+  describe("getBlockCount", function() {
+    it("should use max from primary", async function() {
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlockCount.resolves(2)
 
       let sec = sandbox.createStubInstance(MockBlockStorage)
       sec.getBlockCount.resolves(1)
 
-      bs = new CompositeBlockStorage(prim, sec) 
+      bs = new CompositeBlockStorage(prim, sec)
       return expect(bs.getBlockCount()).to.eventually.equal(2)
     })
 
-    it('should use max from secondary', async function () {
+    it("should use max from secondary", async function() {
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlockCount.resolves(1)
 
@@ -47,49 +47,48 @@ describe('CompositeBlockStorage', function () {
     })
   })
 
-  describe('getBlockHash', function () {
-    it('should use primary', async function () {
+  describe("getBlockHash", function() {
+    it("should use primary", async function() {
       let prim = sandbox.createStubInstance(MockBlockStorage)
-      prim.getBlockHash.resolves('primary-hash')
+      prim.getBlockHash.resolves("primary-hash")
 
       let sec = sandbox.createStubInstance(MockBlockStorage)
-      sec.getBlockHash.resolves('secondary-hash')
+      sec.getBlockHash.resolves("secondary-hash")
 
       bs = new CompositeBlockStorage(prim, sec)
-      return expect(bs.getBlockHash(100)).to.eventually.equal('primary-hash')
+      return expect(bs.getBlockHash(100)).to.eventually.equal("primary-hash")
     })
 
-    it('should use secondary if primary returns null', async function () {
+    it("should use secondary if primary returns null", async function() {
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlockHash.resolves(null)
 
       let sec = sandbox.createStubInstance(MockBlockStorage)
-      sec.getBlockHash.resolves('secondary-hash')
+      sec.getBlockHash.resolves("secondary-hash")
 
       bs = new CompositeBlockStorage(prim, sec)
-      return expect(bs.getBlockHash(100)).to.eventually.equal('secondary-hash')
+      return expect(bs.getBlockHash(100)).to.eventually.equal("secondary-hash")
     })
 
-    it('should use secondary if primary throws', async function () {
+    it("should use secondary if primary throws", async function() {
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlockHash.rejects(new Error())
 
       let sec = sandbox.createStubInstance(MockBlockStorage)
-      sec.getBlockHash.resolves('secondary-hash')
+      sec.getBlockHash.resolves("secondary-hash")
 
       bs = new CompositeBlockStorage(prim, sec)
-      return expect(bs.getBlockHash(100)).to.eventually.equal('secondary-hash')
+      return expect(bs.getBlockHash(100)).to.eventually.equal("secondary-hash")
     })
   })
 
-  describe('getBlock', function () {
-    it('should use primary', async function () {
-
+  describe("getBlock", function() {
+    it("should use primary", async function() {
       let b1 = sandbox.createStubInstance(MockBlock)
-      b1.hash = 'b1'
+      b1.hash = "b1"
       let b2 = sandbox.createStubInstance(MockBlock)
-      b2.hash = 'b2'
-      
+      b2.hash = "b2"
+
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlock.resolves(b1)
 
@@ -97,15 +96,17 @@ describe('CompositeBlockStorage', function () {
       sec.getBlock.resolves(b2)
 
       bs = new CompositeBlockStorage(prim, sec)
-      return expect(bs.getBlock('doesnt matter because stubbed')).to.eventually.have.property('hash', 'b1')
+      return expect(
+        bs.getBlock("doesnt matter because stubbed")
+      ).to.eventually.have.property("hash", "b1")
     })
 
-    it('should use secondary if primary returns null', async function () {
+    it("should use secondary if primary returns null", async function() {
       let b1 = sandbox.createStubInstance(MockBlock)
-      b1.hash = 'b1'
+      b1.hash = "b1"
       let b2 = sandbox.createStubInstance(MockBlock)
-      b2.hash = 'b2'
-      
+      b2.hash = "b2"
+
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlock.resolves(null)
 
@@ -113,15 +114,17 @@ describe('CompositeBlockStorage', function () {
       sec.getBlock.resolves(b2)
 
       bs = new CompositeBlockStorage(prim, sec)
-      return expect(bs.getBlock('doesnt matter because stubbed')).to.eventually.have.property('hash', 'b2')
+      return expect(
+        bs.getBlock("doesnt matter because stubbed")
+      ).to.eventually.have.property("hash", "b2")
     })
 
-    it('should use secondary if primary throws', async function () {
+    it("should use secondary if primary throws", async function() {
       let b1 = sandbox.createStubInstance(MockBlock)
-      b1.hash = 'b1'
+      b1.hash = "b1"
       let b2 = sandbox.createStubInstance(MockBlock)
-      b2.hash = 'b2'
-      
+      b2.hash = "b2"
+
       let prim = sandbox.createStubInstance(MockBlockStorage)
       prim.getBlock.rejects(new Error())
 
@@ -129,7 +132,9 @@ describe('CompositeBlockStorage', function () {
       sec.getBlock.resolves(b2)
 
       bs = new CompositeBlockStorage(prim, sec)
-      return expect(bs.getBlock('doesnt matter because stubbed')).to.eventually.have.property('hash', 'b2')
+      return expect(
+        bs.getBlock("doesnt matter because stubbed")
+      ).to.eventually.have.property("hash", "b2")
     })
   })
 })
