@@ -1,8 +1,8 @@
-import { URL } from 'url'
-import * as path from 'path'
-import MockFetch from "../test-tools/MockFetch"
+import { URL } from "url"
+import * as path from "path"
+import MockFetch from "../test-tools/MockFetch/MockFetch"
 
-function localDirMapperZCash (urlInput) {
+function localDirMapperZCash(urlInput) {
   const u = new URL(urlInput)
-  return `offset=${u.searchParams.get('offset')}.json`
+  return `offset=${u.searchParams.get("offset")}.json`
 }

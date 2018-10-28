@@ -28,15 +28,15 @@ describe("Estimator", function() {
       let ZECUSD = 241.23
       let watts = 190
       let electricityCostKwh = 0.1
-      let dailyEarnings = Estimator.dailyEarnings(
+      let dailyEarnings = Estimator.estimateDailyEarnings({
         yourHashesPerSecond,
         networkHashesPerSecond,
         meanNetworkSecondsBetweenBlocks,
-        10,
-        ZECUSD,
+        rewardedCoinsPerMinedBlock: 10,
+        fiatPerCoinsExchangeRate: ZECUSD,
         watts,
         electricityCostKwh
-      )
+      })
       expect(dailyEarnings).to.be.closeTo(0.37, 0.01)
     })
   })
@@ -49,20 +49,20 @@ describe("Estimator", function() {
       let ZECUSD = 241.23
       let watts = 190
       let electricityCostKwh = 0.1
-      let networkDailyHashRateChange = new BigNumber(0)
+      let networkHashRateChangePerDay = new BigNumber(0)
 
-      let dailyEarningsArray = Estimator.estimateFutureEarnings(
-        3,
-        networkDailyHashRateChange,
+      let dailyEarningsArray = Estimator.estimateFutureEarnings({
+        timeHorizonInDays: 3,
+        networkHashRateChangePerDay,
         yourHashesPerSecond,
         networkHashesPerSecond,
         meanNetworkSecondsBetweenBlocks,
-        10,
-        ZECUSD,
+        rewardedCoinsPerMinedBlock: 10,
+        fiatPerCoinsExchangeRate: ZECUSD,
         watts,
         electricityCostKwh,
-        0.01
-      )
+        feesAsPercent: 0.01
+      })
 
       expect(dailyEarningsArray).to.have.length(3)
       expect(dailyEarningsArray[0])
@@ -103,7 +103,7 @@ describe("Estimator", function() {
         time: new Date(2018, 3, 17, 17).valueOf() / 1000
       }
 
-      let val = Estimator.estimateDailyChangeInNetworkHashRate(
+      let val = Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
         oldBlock,
         newBlock
       )
@@ -125,7 +125,7 @@ describe("Estimator", function() {
         time: new Date(2018, 3, 17, 17).valueOf() / 1000
       }
 
-      let val = Estimator.estimateDailyChangeInNetworkHashRate(
+      let val = Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
         oldBlock,
         newBlock
       )

@@ -1,14 +1,6 @@
-import { BitcoinDifficulty } from "./BitcoinDifficulty"
 import * as _ from "lodash"
 import { BigNumber } from "bignumber.js"
-import Diag from "./lib/Diag"
 import { BlockWithNetworkHashRate, Block } from "./interfaces"
-import BlockchainReader from "./blockchains/BlockchainReader"
-import BlockStorageFileSystem from "./blockchains/BlockStorageFileSystem"
-import * as path from "path"
-import Config from "./Config"
-
-const D = new Diag("Estimator")
 
 /**
  * Estimates earnings and other attributes of mining based on mean time between blocks and network hash rate.
@@ -42,28 +34,19 @@ export class Estimator {
    * Estimates the earnings for the given hash rate and given network information for a single day.
    * Essentially this is the same as @see estimateFutureEarnings but for a single day.
    */
-  static dailyEarnings(
-    yourHashesPerSecond: BigNumber,
-    networkHashesPerSecond: BigNumber,
-    meanNetworkSecondsBetweenBlocks: number,
-    rewardedCoinsPerMinedBlock: number,
-    fiatPerCoinsExchangeRate: number,
-    watts: number = 0,
-    electricityCostKwh: number = 0,
-    feesAsPercent: number = 0
-  ) {
-    let days = Estimator.estimateFutureEarnings(
-      1,
-      new BigNumber(0),
-      yourHashesPerSecond,
-      networkHashesPerSecond,
-      meanNetworkSecondsBetweenBlocks,
-      rewardedCoinsPerMinedBlock,
-      fiatPerCoinsExchangeRate,
-      watts,
-      electricityCostKwh,
-      feesAsPercent
-    )
+  static estimateDailyEarnings(options: EstimateDailyEarningsOptions) {
+    let days = Estimator.estimateFutureEarnings({
+      timeHorizonInDays: 1,
+      networkHashRateChangePerDay: new BigNumber(0),
+      yourHashesPerSecond: options.yourHashesPerSecond,
+      networkHashesPerSecond: options.networkHashesPerSecond,
+      meanNetworkSecondsBetweenBlocks: options.meanNetworkSecondsBetweenBlocks,
+      rewardedCoinsPerMinedBlock: options.rewardedCoinsPerMinedBlock,
+      fiatPerCoinsExchangeRate: options.fiatPerCoinsExchangeRate,
+      watts: options.watts,
+      electricityCostKwh: options.electricityCostKwh,
+      feesAsPercent: options.feesAsPercent
+    })
     return _.size(days) > 0 && _.has(days[0], "totalProfit")
       ? days[0].totalProfit
       : 0
@@ -72,31 +55,23 @@ export class Estimator {
   /**
    * Estimates earnings with the specified mining and specified network information over the specified time horizon.
    * @returns {number} The estimated amount mined in a currency that you can specify with the `fiatPerCoinsExchangeRate` parameter.
-   * @param timeHorizonInDays The number of days you want to estimate earnings over.
-   * @param networkHashRateChangePerDay The amount of daily change expected in network hash/solutions per second during the specified time horizon.
-   * @param yourHashesPerSecond Your hardware's hashes/solutions per second.
-   * @param networkHashesPerSecond The network's total hashes/solutions per second that you want to assume for the estimation.
-   * @param meanNetworkSecondsBetweenBlocks How long on "average" it takes to mine a block with the current network hash rate. This is normally a mean of timings for the last N blocks (e.g. the ZCash client itself uses the most recent 120 blocks).
-   * @param rewardedCoinsPerMinedBlock The number of coins that the miner will be rewarded for mining the block.
-   * @param fiatPerCoinsExchangeRate The number dollars per mined coin that should be used to calculate the resulting profit/revenue. For example if you want to use USD per Bitcoin pass in the current dollars per bitcoin exchange rate here. If you don't want the result in mined coins specify 1.
-   * @param watts The amount of watts your hardware runs at to generate hashes/solutions.
-   * @param electricityCostKwh Your cost of electricity in kilowatt hours.
-   * @param feesAsPercent Any other fees you want to take off the top of generated revenue (e.g. pool fees + mining software fees). Expressed as a percentage (between 0 and 1).
    */
-  static estimateFutureEarnings(
-    timeHorizonInDays: number,
-    networkHashRateChangePerDay: BigNumber,
-    yourHashesPerSecond: BigNumber,
-    networkHashesPerSecond: BigNumber,
-    meanNetworkSecondsBetweenBlocks: number,
-    rewardedCoinsPerMinedBlock: number,
-    fiatPerCoinsExchangeRate: number,
-    watts: number = 0,
-    electricityCostKwh: number = 0,
-    feesAsPercent: number = 0
-  ) {
-    if (!timeHorizonInDays || timeHorizonInDays <= 0)
+  static estimateFutureEarnings(options: EstimateFutureEarningsOptions) {
+    if (!options.timeHorizonInDays || options.timeHorizonInDays <= 0)
       throw new Error("timeHorizonInDays must be greater than zero")
+
+    const defaultValuesIfNull = {
+      electricityCostKwh: 0,
+      feesAsPercent: 0,
+      watts: 0
+    }
+    _.each(
+      Object.keys(defaultValuesIfNull),
+      key =>
+        (options[key] = _.isNil(options[key])
+          ? defaultValuesIfNull[key]
+          : options[key])
+    )
     const SECONDS_PER_HOUR = 60 * 60.0
     const SECONDS_PER_DAY = SECONDS_PER_HOUR * 24.0
     let totalRevenue = 0
@@ -104,22 +79,29 @@ export class Estimator {
     let totalFeeCost = 0
     let totalProfit = 0
     let days = []
-    for (let dayNum = 0; dayNum < timeHorizonInDays; dayNum++) {
-      let daysToMineBlock = new BigNumber(meanNetworkSecondsBetweenBlocks)
-        .dividedBy(yourHashesPerSecond.dividedBy(networkHashesPerSecond))
+    for (let dayNum = 0; dayNum < options.timeHorizonInDays; dayNum++) {
+      let daysToMineBlock = new BigNumber(
+        options.meanNetworkSecondsBetweenBlocks
+      )
+        .dividedBy(
+          options.yourHashesPerSecond.dividedBy(options.networkHashesPerSecond)
+        )
         .dividedBy(SECONDS_PER_DAY)
       let blocksPerDay = new BigNumber(1.0)
         .dividedBy(daysToMineBlock)
         .toNumber()
 
       let revenue =
-        blocksPerDay * rewardedCoinsPerMinedBlock * fiatPerCoinsExchangeRate
+        blocksPerDay *
+        options.rewardedCoinsPerMinedBlock *
+        options.fiatPerCoinsExchangeRate
       totalRevenue += revenue
 
-      let electricCost = (watts / 1000) * electricityCostKwh * 24
+      let electricCost =
+        (options.watts / 1000) * options.electricityCostKwh * 24
       totalElectricCost += electricCost
 
-      let feeCost = revenue * feesAsPercent
+      let feeCost = revenue * options.feesAsPercent
       totalFeeCost += feeCost
 
       let profit = revenue - (electricCost + feeCost)
@@ -127,7 +109,7 @@ export class Estimator {
 
       let dayStats = {
         dayNumber: dayNum,
-        networkHashesPerSecond,
+        networkHashesPerSecond: options.networkHashesPerSecond,
         revenue,
         totalRevenue,
         electricCost,
@@ -138,7 +120,7 @@ export class Estimator {
         totalProfit
       }
       days.push(dayStats)
-      networkHashesPerSecond.plus(networkHashRateChangePerDay)
+      options.networkHashesPerSecond.plus(options.networkHashRateChangePerDay)
     }
     return days
   }
@@ -173,6 +155,21 @@ export class Estimator {
   }
 
   /**
+   * Returns a clone of the specified block with the `networkHashRate` property added.
+   * @param block A block to add hashrate to.
+   * @param reader A reader for the speicifed block to get additional block chain info from.
+   */
+  static async blockWithNetworkHashRate(
+    block: Block
+  ): Promise<BlockWithNetworkHashRate> {
+    let hashRate = await Estimator.estimateNetworkHashRate(block)
+    //let clone = Object.assign(block, { networkHashRate: hashRate })
+    block["networkHashRate"] = hashRate
+    //return (clone as BlockWithNetworkHashRate)
+    return block as BlockWithNetworkHashRate
+  }
+
+  /**
    * Calculates the average change in network hashrate over the number of specified days.
    * @param newestBlock The newest block in the blockchain
    * @param dayCount The number of days to go back to use to average the daily change over
@@ -192,25 +189,10 @@ export class Estimator {
       b0 = await b0.previous()
     }
     const withHashRate = b => Estimator.blockWithNetworkHashRate(b)
-    return Estimator.estimateDailyChangeInNetworkHashRate(
+    return Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
       await withHashRate(b0),
       await withHashRate(resolvedBlock)
     )
-  }
-
-  /**
-   * Returns a clone of the specified block with the `networkHashRate` property added.
-   * @param block A block to add hashrate to.
-   * @param reader A reader for the speicifed block to get additional block chain info from.
-   */
-  static async blockWithNetworkHashRate(
-    block: Block
-  ): Promise<BlockWithNetworkHashRate> {
-    let hashRate = await Estimator.estimateNetworkHashRate(block)
-    //let clone = Object.assign(block, { networkHashRate: hashRate })
-    block["networkHashRate"] = hashRate
-    //return (clone as BlockWithNetworkHashRate)
-    return block as BlockWithNetworkHashRate
   }
 
   /**
@@ -219,7 +201,7 @@ export class Estimator {
    * The two blocks chosen should be the one at the beginning of the historical period you want to evaluate hash rate increase based on.
    * For example, if you wanted to use 30 day period to assess the daily hash rate change from, you'd choose a block at the beginning of a thirty day period and a block at the end of that 30 day period.
    */
-  static estimateDailyChangeInNetworkHashRate(
+  static estimateNetworkHashRateDailyChangeBetweenBlocks(
     oldBlock: BlockWithNetworkHashRate,
     newBlock: BlockWithNetworkHashRate
   ): BigNumber {
@@ -230,4 +212,63 @@ export class Estimator {
     )
     return changeInHasRatePS.dividedBy(periodInDays.toFixed(4)) // Because BigNumber throws if >15 significant digits
   }
+}
+
+/**
+ * Options for the @see Estimator.estimateFutureEarnings function.
+ */
+export interface EstimateFutureEarningsOptions
+  extends EstimateEarningsBaseOptions {
+  /**
+   * The number of days you want to estimate earnings over.
+   */
+  timeHorizonInDays: number
+  /**
+   * The amount of daily change expected in network hash/solutions per second during the specified time horizon.
+   */
+  networkHashRateChangePerDay: BigNumber
+}
+
+/**
+ * Options for the @see Estimator.estimateDailyEarnings function.
+ */
+export interface EstimateDailyEarningsOptions
+  extends EstimateEarningsBaseOptions {}
+
+/**
+ * Shared options for some of the @see Estimator functions.
+ */
+interface EstimateEarningsBaseOptions {
+  /**
+   * Your hardware's hashes/solutions per second.
+   */
+  yourHashesPerSecond: BigNumber
+  /**
+   * The network's total hashes/solutions per second that you want to assume for the estimation.
+   */
+  networkHashesPerSecond: BigNumber
+  /**
+   * How long on "average" it takes to mine a block with the current network hash rate. This is normally a mean of timings for the last N blocks (e.g. the ZCash client itself uses the most recent 120 blocks).
+   */
+  meanNetworkSecondsBetweenBlocks: number
+  /**
+   * The number of coins that the miner will be rewarded for mining the block.
+   */
+  rewardedCoinsPerMinedBlock: number
+  /**
+   * The number dollars per mined coin that should be used to calculate the resulting profit/revenue. For example if you want to use USD per Bitcoin pass in the current dollars per bitcoin exchange rate here. If you don't want the result in mined coins specify 1.
+   */
+  fiatPerCoinsExchangeRate: number
+  /**
+   * The amount of watts your hardware runs at to generate hashes/solutions.
+   */
+  watts?: number
+  /**
+   * Your cost of electricity in kilowatt hours.
+   */
+  electricityCostKwh?: number
+  /**
+   * Any other fees you want to take off the top of generated revenue (e.g. pool fees + mining software fees). Expressed as a percentage (between 0 and 1).
+   */
+  feesAsPercent?: number
 }

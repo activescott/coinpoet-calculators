@@ -1,11 +1,10 @@
 import { BigNumber } from "bignumber.js"
 import { prompt } from "inquirer"
 import * as _ from "lodash"
-import { Estimator } from "../src/Estimator"
+import { Estimator, EstimateFutureEarningsOptions } from "../src/Estimator"
 import { ZCashReader } from "./ZCashReader"
 
 // Demonstration of the coinpoet-calculators high-level capabilities
-
 async function main() {
   let answers = await prompt<{ coin: string; cmd: string }>([
     {
@@ -41,19 +40,9 @@ async function main() {
     },
     // TODO: The fact that we're declaring this type here makes me think we should put this in the library and put all params on it for @see Estimator.estimateFutureEarnings so the user doesn't have to declare it.
     "my future earnings": async answers => {
-      type EParams = {
-        networkHashesPerSecond: BigNumber
-        timeHorizonInDays: number
-        yourHashesPerSecond: BigNumber
-        networkHashRateChangePerDay: BigNumber
-        meanNetworkSecondsBetweenBlocks: number
-        rewardedCoinsPerMindedBlock: number
-        fiatPerCoinsExchangeRate: number
-        watts: number
-        electricityCostKwh: number
-        feesAsPercent: number
-      }
-      let earningsParms: EParams = await prompt<EParams>([
+      let earningsParms: EstimateFutureEarningsOptions = await prompt<
+        EstimateFutureEarningsOptions
+      >([
         {
           type: "input",
           message: "What is the hashes per second value (H/s)?",
@@ -78,24 +67,13 @@ async function main() {
       earningsParms.meanNetworkSecondsBetweenBlocks = await Estimator.meanTimeBetweenBlocks(
         ZCashReader.newestBlock()
       )
-      earningsParms.rewardedCoinsPerMindedBlock = 25
+      earningsParms.rewardedCoinsPerMinedBlock = 25
       earningsParms.fiatPerCoinsExchangeRate = 125
       earningsParms.watts = 140
       earningsParms.electricityCostKwh = 0.11
       earningsParms.feesAsPercent = 0.1
 
-      let futureEarnings = Estimator.estimateFutureEarnings(
-        earningsParms.timeHorizonInDays,
-        earningsParms.networkHashRateChangePerDay,
-        earningsParms.yourHashesPerSecond,
-        earningsParms.networkHashesPerSecond,
-        earningsParms.meanNetworkSecondsBetweenBlocks,
-        earningsParms.rewardedCoinsPerMindedBlock,
-        earningsParms.fiatPerCoinsExchangeRate,
-        earningsParms.watts,
-        earningsParms.electricityCostKwh,
-        earningsParms.feesAsPercent
-      )
+      let futureEarnings = Estimator.estimateFutureEarnings(earningsParms)
       console.log("Your future earnings are:", futureEarnings)
     },
     "what should be willing to pay for a card?": async answers => {
