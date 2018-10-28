@@ -1,5 +1,5 @@
 - Do travis-ci.org
-  - Put a minimal number of zcash blocks in a test-data dir to run unit tests. Something like ~100 1000 blocks
+  + Put a minimal number of zcash blocks in a test-data dir to run unit tests. Something like ~100 1000 blocks
 - Code coverage
 - Have Estimator.estimateFutureEarnings accept a typed "options" param instead of individual params. It is gross to build up the params in the demo/index.ts.
 - Shut up BlockStorageFileSystem's error logging when used via composite. Pass in a param to have it not log errors.
