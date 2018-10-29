@@ -51,23 +51,8 @@ export abstract class BlockStorage<TBlock extends Block> {
    */
   async getBlockFromHeight(height: number): Promise<TBlock> {
     let hash
-    try {
-      hash = await this.getBlockHash(height)
-    } catch (err) {
-      throw new Error(
-        `An error occured retrieving hash for block height ${height}:` +
-          err.message
-      )
-    }
-    if (!hash) throw new Error(`A block for height ${height} was not found.`)
-    try {
-      return this.getBlock(hash)
-    } catch (err) {
-      throw new Error(
-        `An error occured retrieving block for block height ${height}:` +
-          err.message
-      )
-    }
+    hash = await this.getBlockHash(height)
+    return this.getBlock(hash)
   }
 }
 

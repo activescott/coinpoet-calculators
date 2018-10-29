@@ -44,6 +44,13 @@ describe("BlockStorageFileSystem", function() {
       )
       expect(b).to.have.property("height", 334480)
     })
+
+    it("should throw if not exists", async function() {
+      bsfs = new BlockStorageFileSystem(Config.emptyDirPath)
+      return expect(bsfs.getBlock("fjksdljkdafs")).to.rejectedWith(
+        /Error reading hash index file/
+      )
+    })
   })
 
   describe("throwAndLogOnMissingFiles = false", async function() {
@@ -74,9 +81,17 @@ describe("BlockStorageFileSystem", function() {
 
     describe("constructor", async function() {
       it("should not throw on non-existing path", async function() {
-        expect(new BlockStorageFileSystem("/tmp/does/not/exist/path", false)).to
-          .not.throw
+        const fn = () =>
+          new BlockStorageFileSystem("/tmp/does/not/exist/path", false)
+        expect(fn).to.not.throw
       })
+    })
+  })
+
+  describe("constructor", async function() {
+    it("should throw on non-existing path", async function() {
+      const fn = () => new BlockStorageFileSystem("/tmp/does/not/exist/path")
+      expect(fn).to.throw
     })
   })
 })

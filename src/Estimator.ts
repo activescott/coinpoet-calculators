@@ -14,7 +14,7 @@ export class Estimator {
    */
   static async meanTimeBetweenBlocks(
     block: Block | Promise<Block>,
-    lookbackTimeSpanSeconds: number = 60 ^ (2 * 2)
+    lookbackTimeSpanSeconds: number = 60 ** 2 * 24 // < 1h * 24 == 1d
   ): Promise<number> {
     if (!block) throw new Error("block must be provided")
     if (lookbackTimeSpanSeconds < 1)
@@ -22,12 +22,19 @@ export class Estimator {
 
     let resolvedBlock: Block = await block
     let b0 = await resolvedBlock.previous()
+    if (!b0)
+      throw new Error(
+        "provided block must have previous blocks, but previous returned null"
+      )
     let lookbackCount = 1
-    while (b0 && resolvedBlock.time - b0.time < lookbackTimeSpanSeconds) {
+    let timeSpan = 0
+    timeSpan = resolvedBlock.time - b0.time
+    while (b0 && timeSpan < lookbackTimeSpanSeconds) {
       b0 = await b0.previous()
+      timeSpan = resolvedBlock.time - b0.time
       lookbackCount++
     }
-    return (resolvedBlock.time - b0.time) / lookbackCount
+    return timeSpan / lookbackCount
   }
 
   /**
@@ -136,7 +143,9 @@ export class Estimator {
     newestBlock: Block | Promise<Block>,
     lookbackCount: number = 120
   ): Promise<BigNumber> {
-    if (!newestBlock) throw new Error("newestBlock cannot be null")
+    if (!newestBlock) throw new Error("newestBlock must be provided")
+    if (lookbackCount < 0)
+      throw new Error("lookbackCount must be greater than or equal to zero")
     let resolvedBlock: Block = await newestBlock
     let b0 = resolvedBlock
     let minTime: number = b0.time

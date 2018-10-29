@@ -6,9 +6,26 @@ import LruCache from "../lib/LruCache"
 const D = new Diag("LruBlockStorage")
 
 const blockTime = 150
-const secondsPerDay = 60 * 60 * 24
-const blocksPerDay = secondsPerDay / blockTime
-const maxCacheItems = blocksPerDay * 7
+const secondsPerDay = 60 * 60 * 24 // 86,400
+const blocksPerDay = secondsPerDay / blockTime // 576
+// const maxCacheItems = blocksPerDay * 7       // ~82
+const maxCacheItems = blocksPerDay * 30 // 17,280 VERY rarely would we go beyond 30 days.
+/* NOTE: 
+ * 1 JSON block is ~3442 bytes
+ * Very roughly the overhead per block (mostly due to LruCache):
+ * - 3442 bytes: disk size of a json block
+ * - heightToHashCache
+ *  - +256 bytes: 4 pointers per LruNode
+ *  - +32 bytes: the height number as LruNode key
+ *  - +128 bytes: 64 chararacter string of hash as value
+ * - hashToBlockCache
+ *  - +256 bytes: 4 pointers per LruNode
+ *  - +128 bytes: 64 chararacter string of hash as key
+ *  - (value is block itself)
+ * == 4,242 bytes == 4.2K
+ * 
+ * So 100MB of in memory blocks would be: ~24K blocks
+*/
 
 export default class LruBlockStorage extends BlockStorage<Block> {
   private readonly heightToHashCache: LruCache<number, Promise<string>>

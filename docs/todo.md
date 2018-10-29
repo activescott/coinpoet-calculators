@@ -10,10 +10,11 @@
     + Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
   + LruBlockStorage -> Least recently used block storage that caches ~5K blocks?
   - ZcashNodeRpcBlockStorage - reads directly from a zcash node's RPC interface.
-  - The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
-    - Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
-      - Cache blocks in memory using `height -> Block` map.
-      - Cache a small number like ~7 days of blocks (576 per day ~576\*7=4K)
+    - Why - Only make sense if we deploy zcash node in production
+  + The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
+    + Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
+      + Cache blocks in memory using `height -> Block` map.
+      + Cache a small number like ~7 days of blocks (576 per day ~576\*7=4K)
 
 - Web demo
   - via zeit now
