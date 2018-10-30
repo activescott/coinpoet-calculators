@@ -8,10 +8,17 @@ export enum LogLevel {
 
 export default class Diag {
   private _prefix: string
+  private readonly _level: LogLevel
   public static Level: LogLevel = LogLevel.WARN
+  public static readonly NONE = 0
+  public static readonly ERROR = 1
+  public static readonly WARN = 2
+  public static readonly INFO = 3
+  public static readonly DEBUG = 4
 
-  constructor(prefix) {
+  constructor(prefix, level?: LogLevel) {
     this._prefix = prefix
+    this._level = level ? level : Diag.Level
   }
 
   log(...args) {
@@ -19,22 +26,23 @@ export default class Diag {
   }
 
   debug(...args) {
-    if (Diag.Level >= LogLevel.DEBUG) console.warn(`${this._prefix}:`, ...args)
+    if (this._level >= LogLevel.DEBUG) console.log(`${this._prefix}:`, ...args)
   }
 
   info(...args) {
-    if (Diag.Level >= LogLevel.INFO) console.warn(`${this._prefix}:`, ...args)
+    if (this._level >= LogLevel.INFO) console.log(`${this._prefix}:`, ...args)
   }
 
   warn(...args) {
-    if (Diag.Level >= LogLevel.WARN) console.warn(`${this._prefix}:`, ...args)
+    if (this._level >= LogLevel.WARN) console.log(`${this._prefix}:`, ...args)
   }
 
   error(...args) {
-    if (Diag.Level >= LogLevel.ERROR) console.error(`${this._prefix}:`, ...args)
+    if (this._level >= LogLevel.ERROR)
+      console.error(`${this._prefix}:`, ...args)
   }
 
   assert(test, ...args) {
-    if (Diag.Level >= LogLevel.ERROR) console.assert(test, ...args)
+    if (this._level >= LogLevel.ERROR) console.assert(test, ...args)
   }
 }

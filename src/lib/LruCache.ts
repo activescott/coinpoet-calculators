@@ -57,12 +57,12 @@ export default class LruCache<TKey, TValue> {
   get(key: TKey): TValue {
     let node = this.map.get(key)
     if (!node) {
-      // D.debug('Lru cache miss for key', key)
+      D.debug("Lru cache miss for key", key)
       let val = this.getter(key)
       node = new LruNode(key, val)
       this.map.set(key, node)
     } else {
-      // D.debug('Lru cache hit for key', key)
+      D.debug("Lru cache hit for key", key)
     }
     this.onNodeAccessed(node)
     return node.value

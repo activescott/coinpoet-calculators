@@ -42,14 +42,14 @@ export default class LruBlockStorage extends BlockStorage<Block> {
     this.heightToHashCache = new LruCache<number, Promise<string>>(
       maxSize,
       height => {
-        D.debug("caching", height)
+        D.debug("caching", height, `(size ${this.size})`)
         return realStorage.getBlockHash(height)
       }
     )
     this.hashToBlockCache = new LruCache<string, Promise<Block>>(
       maxSize,
       hash => {
-        D.debug("caching", hash)
+        D.debug("caching", hash, `(size ${this.size})`)
         return realStorage.getBlock(hash)
       }
     )
