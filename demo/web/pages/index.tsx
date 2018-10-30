@@ -1,8 +1,9 @@
 import React from "react"
 import Link from "next/link"
+import Layout from "../components/Layout"
 
 export default () => (
-  <div>
+  <Layout>
     <ul>
       <li>
         <Link href="/a" as="/a">
@@ -15,5 +16,5 @@ export default () => (
         </Link>
       </li>
     </ul>
-  </div>
+  </Layout>
 )

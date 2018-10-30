@@ -1,25 +1,31 @@
 import React from "react"
 import { withRouter } from "next/router"
+import Layout from "../components/Layout"
 import "isomorphic-fetch"
 import getConfig from "next/config"
 const { publicRuntimeConfig } = getConfig()
 
 let Page: any = withRouter((props: any) => (
-  <div>
+  <Layout>
     <p style={{ color: "red" }}>
-      Your mean time between blocks is: {props.meanTimeBetweenBlocks.value}
+      The expected mean time between blocks is:{" "}
+      {props.meanTimeBetweenBlocks.value}
     </p>
-    <h1>props:</h1>
-    <pre>{JSON.stringify(props, null, "  ")}</pre>
-  </div>
+  </Layout>
 ))
 
 Page.getInitialProps = async function(context) {
-  const url = `${context.req.protocol}://${context.req.host}:${
-    publicRuntimeConfig.port
-  }`
-  const res = await fetch(`${url}/api/meanTimeBetweenBlocks`)
+  // console.log("context keys", Object.keys(context))
+  const coin = context.query.coin ? context.query.coin : "zcash"
+  const protocol = context.req
+    ? context.req.protocol + ":"
+    : window.location.protocol
+  const hostname = context.req ? context.req.hostname : window.location.hostname
+  const url = `${protocol}//${hostname}:${publicRuntimeConfig.port}`
+  console.log("url", url)
+  const res = await fetch(`${url}/api/meanTimeBetweenBlocks?coin=${coin}`)
   const json = await res.json()
+  console.log("api/meanTimeBetweenBlocks json:", json)
   return {
     meanTimeBetweenBlocks: json
   }
