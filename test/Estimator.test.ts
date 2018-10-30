@@ -8,7 +8,7 @@ import BlockStorageFileSystem from "../src/blockchains/BlockStorageFileSystem"
 import Config from "../src/Config"
 import { existsSync } from "fs"
 import { Block } from "../src/interfaces"
-import { MockBlock } from "./mocks/MockBlock"
+import { MockBlock, MockBlockWithNetworkHashRate } from "./mocks/MockBlock"
 
 describe("Estimator", function() {
   let sandbox: sinon.SinonSandbox
@@ -151,44 +151,52 @@ describe("Estimator", function() {
 
   describe("estimateNetworkHashRateDailyChangeBetweenBlocks", function() {
     it("estimateDailyChangeInNetworkHashRate 1 day", function() {
-      let newBlock = {
-        hash: "newblock",
-        networkHashRate: new BigNumber(26679207 * 10 ** 12),
-        time: new Date(2018, 3, 18, 17).valueOf() / 1000
-      }
-      let oldBlock = {
-        hash: "oldblock",
-        networkHashRate: new BigNumber(25990711 * 10 ** 12),
-        time: new Date(2018, 3, 17, 17).valueOf() / 1000
-      }
-
-      let val = Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
+      const newBlock = new MockBlockWithNetworkHashRate(
+        "newBlock",
+        0,
+        new Date(2018, 3, 18, 17).valueOf() / 1000,
+        "newBlockPrev",
+        "1010101",
+        new BigNumber(26679207 * 10 ** 12)
+      )
+      const oldBlock = new MockBlockWithNetworkHashRate(
+        "oldblock",
+        0,
+        new Date(2018, 3, 17, 17).valueOf() / 1000,
+        "oldBlockPrev",
+        "1010101",
+        new BigNumber(25990711 * 10 ** 12)
+      )
+      const val = Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
         oldBlock,
         newBlock
       )
-      let valThs = val.dividedBy(10 ** 12).toNumber()
+      const valThs = val.dividedBy(10 ** 12).toNumber()
       expect(valThs).to.equal(688496)
     })
 
     it("estimateDailyChangeInNetworkHashRate 30 days", function() {
-      let newBlock = {
-        hash: "newblock",
-        height: 0,
-        networkHashRate: new BigNumber(26679207 * 10 ** 12),
-        time: new Date(2018, 4, 18, 17).valueOf() / 1000
-      }
-      let oldBlock = {
-        hash: "oldblock",
-        height: 0,
-        networkHashRate: new BigNumber(25990711 * 10 ** 12),
-        time: new Date(2018, 3, 17, 17).valueOf() / 1000
-      }
-
-      let val = Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
+      const newBlock = new MockBlockWithNetworkHashRate(
+        "newblock",
+        0,
+        new Date(2018, 4, 18, 17).valueOf() / 1000,
+        "newPrev",
+        "01010",
+        new BigNumber(26679207 * 10 ** 12)
+      )
+      const oldBlock = new MockBlockWithNetworkHashRate(
+        "oldblock",
+        0,
+        new Date(2018, 3, 17, 17).valueOf() / 1000,
+        "prevOld",
+        "010101",
+        new BigNumber(25990711 * 10 ** 12)
+      )
+      const val = Estimator.estimateNetworkHashRateDailyChangeBetweenBlocks(
         oldBlock,
         newBlock
       )
-      let valThs = val.dividedBy(10 ** 12).toNumber()
+      const valThs = val.dividedBy(10 ** 12).toNumber()
       expect(valThs).to.be.closeTo(22209, 1)
     })
   })
@@ -232,7 +240,8 @@ describe("Estimator", function() {
       // this is a pretty unlikely scenario but lets make sure it is resiliant against a misbehaving block for now.
       let block = sinon.createStubInstance<MockBlock>(MockBlock)
       block.previous.returns(null)
-      const fn = async () => Estimator.meanTimeBetweenBlocks(block)
+      const fn = async () =>
+        Estimator.meanTimeBetweenBlocks((block as any) as Block)
       return expect(fn()).to.be.rejectedWith(
         /provided block must have previous blocks/
       )

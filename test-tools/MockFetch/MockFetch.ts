@@ -1,10 +1,12 @@
 import * as BbPromise from "bluebird"
-import * as _fs from "fs"
+import { promisify } from "util"
+import * as fs from "fs"
 import * as path from "path"
 import { fetch as _realFetch } from "cross-fetch"
 import * as _ from "lodash"
 import Diag from "../../src/lib/Diag"
-const fs = BbPromise.promisifyAll(_fs)
+
+const writeFileAsync = promisify(fs.writeFile)
 
 const D = new Diag("MockFetch")
 
@@ -99,7 +101,7 @@ export default class MockFetch {
       }
     }
     D.info("writing", _.size(JSON.parse(text)), "blocks to", dest)
-    return fs.writeFileAsync(dest, text)
+    return writeFileAsync(dest, text)
   }
 }
 

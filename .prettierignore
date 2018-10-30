@@ -3,3 +3,4 @@ docs/todo.md
 yarn-error.log
 yarn.lock
 /coverage/
+/dist/
