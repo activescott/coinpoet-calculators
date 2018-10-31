@@ -8,6 +8,14 @@ const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== "production"
 const nextApp = next({ dev })
 
+process.on("uncaughtException", err => {
+  console.error("Caught exception:", err)
+})
+
+process.on("unhandledRejection", (reason, p) => {
+  console.error("Unhandled Rejection at:", p, "reason:", reason)
+})
+
 nextApp
   .prepare()
   .then(() => {
@@ -28,6 +36,9 @@ nextApp
     expressApp.get("/meanTimeBetweenBlocks", (req, res) =>
       nextApp.render(req, res, "/meanTimeBetweenBlocks", req.params)
     )
+    expressApp.get("/service-worker.js", (req, res) =>
+      nextApp.render(req, res, "/service-worker.js", req.params)
+    )
 
     // API:
     expressApp.get("/api/meanTimeBetweenBlocks", meanTimeBetweenBlocksHandler)
@@ -46,4 +57,5 @@ nextApp
   .catch(err => {
     console.log("An error occurred, unable to start the server")
     console.log(err)
+    process.exit(1)
   })

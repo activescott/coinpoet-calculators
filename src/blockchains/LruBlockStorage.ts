@@ -2,6 +2,7 @@ import { Block, BlockStorage } from "../interfaces"
 
 import Diag from "../lib/Diag"
 import LruCache from "../lib/LruCache"
+import proxyBlock from "./proxyBlock"
 
 const D = new Diag("LruBlockStorage")
 
@@ -69,21 +70,5 @@ export default class LruBlockStorage extends BlockStorage<Block> {
 
   getBlock(blockHash: string): Promise<Block> {
     return proxyBlock(this.hashToBlockCache.get(blockHash), this)
-  }
-}
-
-async function proxyBlock(
-  block: Block | Promise<Block>,
-  owningStorage: BlockStorage<Block>
-): Promise<Block> {
-  let resolvedBlock = await block
-  if (resolvedBlock) {
-    return {
-      ...resolvedBlock,
-      previous: () => owningStorage.getBlock(resolvedBlock.previousBlockHash)
-    }
-  } else {
-    // don't turn a null/undefined value to a non-null value
-    return resolvedBlock
   }
 }

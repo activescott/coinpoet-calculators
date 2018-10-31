@@ -1,5 +1,10 @@
 - Web demo
+  - switch hours to a dropdown rather than input
   - via zeit now
+
+- Test for LruNode.removeYourselfFromChain
+- Cleanup demo/web/pages/meanTimeBetweenBlocks.tsx (separate components, etc.)
+- Test for CompositeBlockStorage usage of proxyBlock
 
 - Put Diag in it's own NPM Package. Using it from several places.
   - Add tests for Diag (AVA)

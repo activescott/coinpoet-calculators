@@ -57,8 +57,9 @@ export default class LruCache<TKey, TValue> {
   get(key: TKey): TValue {
     let node = this.map.get(key)
     if (!node) {
-      D.debug("Lru cache miss for key", key)
+      D.debug("Lru cache miss for key", key, "getter:", this.getter)
       let val = this.getter(key)
+      D.debug("Lru cache miss for key", key, "resolved to", val)
       node = new LruNode(key, val)
       this.map.set(key, node)
     } else {
@@ -71,6 +72,7 @@ export default class LruCache<TKey, TValue> {
   private onNodeAccessed(node: LruNode<TKey, TValue>): void {
     // maintain head:
     if (this.head !== node) {
+      node.removeYourselfFromChain()
       node.insertYourselfBefore(this.head)
       this.head = node
       D.assert(!this.head.previous, "expected head.previous to be null")
@@ -82,10 +84,12 @@ export default class LruCache<TKey, TValue> {
       this.map.size > this.maxSize &&
       this.tail !== this.head
     ) {
-      // D.debug('Lru deleting node', this.tail.key)
+      D.debug("Lru deleting node", this.tail.key)
       this.map.delete(this.tail.key)
       let oldTail = this.tail
       this.tail = oldTail.previous
+      //unhook the tail from the chain:
+      oldTail.removeYourselfFromChain()
       if (this.tail) this.tail.next = null
     }
     // maintain tail:
@@ -101,12 +105,20 @@ class LruNode<TKey, TValue> {
     public previous: LruNode<TKey, TValue> = null
   ) {}
 
+  public removeYourselfFromChain() {
+    if (this.previous) this.previous.next = this.next
+    if (this.next) this.next.previous = this.previous
+  }
+
   public insertYourselfBefore(beforeNode) {
-    if (!beforeNode) return
-    let myPrevious = beforeNode.previous
+    if (beforeNode === this) return
     let myNext = beforeNode
-    if (myNext) myNext.previous = this
-    this.previous = myPrevious
     this.next = myNext
+    if (beforeNode) {
+      let myPrevious = beforeNode.previous
+      this.previous = myPrevious
+    }
+
+    if (myNext) myNext.previous = this
   }
 }

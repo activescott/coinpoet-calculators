@@ -2,6 +2,7 @@ import * as _ from "lodash"
 import * as util from "util"
 import { BlockStorage, Block } from "../interfaces"
 import Diag from "../lib/Diag"
+import proxyBlock from "./proxyBlock"
 
 const D = new Diag("CompositeBlockStorage")
 
@@ -23,7 +24,7 @@ export default class CompositeBlockStorage extends BlockStorage<Block> {
     defaultValue: any,
     ...args
   ): Promise<Array<any>> {
-    // D.debug('_invokeBoth(', path, defaultValue, args, ')')
+    D.debug("_invokeBoth(", path, defaultValue, args, ")")
     let primaryValue: any = defaultValue,
       secondaryValue: any = defaultValue
     try {
@@ -46,6 +47,7 @@ export default class CompositeBlockStorage extends BlockStorage<Block> {
         err.message
       )
     }
+    D.debug("_invokeBoth complete:", primaryValue, secondaryValue)
     return Promise.resolve([primaryValue, secondaryValue])
   }
 
@@ -63,6 +65,7 @@ export default class CompositeBlockStorage extends BlockStorage<Block> {
 
   async getBlock(blockHash: string): Promise<Block> {
     let values = await this._invokeBoth("getBlock", null, blockHash)
-    return _.find(values, v => v !== null)
+    let block = _.find(values, v => v !== null)
+    return proxyBlock(block, this)
   }
 }
