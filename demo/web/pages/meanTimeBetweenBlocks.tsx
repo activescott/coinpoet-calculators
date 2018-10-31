@@ -124,6 +124,7 @@ class DisplayFetchResult extends React.Component<
 
   fetchData = async () => {
     console.log("Fetching", this.props.url, "...")
+    this.setState({ fetchResult: null })
     const res = await fetch(this.props.url)
     const fetchResult = await res.json()
     console.log("Fetching", this.props.url, "complete:", fetchResult)
