@@ -3,15 +3,13 @@ import "isomorphic-fetch"
 
 interface DisplayFetchResultProps {
   url: string
-  displayPropAccessor: (result: any) => string
-  loadingText?: string
+  resultRenderer: (fetchFesult: any) => JSX.Element
+  loadingNode?: () => JSX.Element
 }
 
 interface DisplayFetchResultState {
   fetchResult?: any
 }
-
-//TODO: Add a resultRenderer instead of a displayPropAccessor
 
 /**
  * Fetches the url and displays the value of the specified prop.
@@ -20,9 +18,14 @@ class DisplayFetchResult extends React.Component<
   DisplayFetchResultProps,
   DisplayFetchResultState
 > {
-  constructor(props: DisplayFetchResultProps, readonly _loadingText: string) {
+  constructor(
+    props: DisplayFetchResultProps,
+    readonly _loadingNode: () => JSX.Element
+  ) {
     super(props)
-    this._loadingText = props.loadingText ? props.loadingText : "Loading..."
+    this._loadingNode = props.loadingNode
+      ? props.loadingNode
+      : () => <span>Loading...</span>
   }
 
   render = () => {
@@ -30,13 +33,9 @@ class DisplayFetchResult extends React.Component<
       "fetchResult in render:",
       this.state ? this.state.fetchResult : "null"
     )
-    return (
-      <span>
-        {this.state && this.state.fetchResult
-          ? this.props.displayPropAccessor(this.state.fetchResult)
-          : this._loadingText}
-      </span>
-    )
+    return this.state && this.state.fetchResult
+      ? this.props.resultRenderer(this.state.fetchResult)
+      : this._loadingNode()
   }
 
   componentDidMount = async () => {

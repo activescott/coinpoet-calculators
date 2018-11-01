@@ -53,7 +53,7 @@ class Page extends React.Component<MyProps, MyState> {
               this.props.coin,
               this.state.hours
             )}
-            displayPropAccessor={obj => _.get(obj, "value")}
+            resultRenderer={obj => <span>{_.get(obj, "value")}</span>}
           />
         </p>
       </Layout>

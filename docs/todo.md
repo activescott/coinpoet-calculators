@@ -1,4 +1,7 @@
 - Web demo
+  + When request starts, should show "Loading..."
+  + DisplayFetchResult: Add a resultRenderer instead of a displayPropAccessor
+  + Submit fix for withRouter typing https://github.com/DefinitelyTyped/DefinitelyTyped/issues/24077
   - switch hours to a dropdown rather than input
   - via zeit now
 
