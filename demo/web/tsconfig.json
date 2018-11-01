@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "exclude": ["junk/**/*"],
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ES6",
     "module": "esnext",
     "jsx": "preserve",
     "allowJs": true,

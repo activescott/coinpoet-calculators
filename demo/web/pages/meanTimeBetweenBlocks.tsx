@@ -1,22 +1,23 @@
 import React from "react"
 import { withRouter, SingletonRouter } from "next/router"
+import DisplayFetchResult from "../components/DisplayFetchResult"
 import Layout from "../components/Layout"
-import "isomorphic-fetch"
 import getConfig from "next/config"
-const { publicRuntimeConfig } = getConfig()
 import { NextContext } from "next"
 import { Request } from "express"
 import * as _ from "lodash"
 import { IncomingMessage } from "http"
 
+const { publicRuntimeConfig } = getConfig()
+
 type MyNextContext = NextContext<{ coin: string }>
 
-interface IQuery {
+interface MyQuery {
   coin: string
 }
 
 interface MyProps {
-  router?: SingletonRouter
+  router?: SingletonRouter<MyQuery>
   baseUrl: string
   coin: string
 }
@@ -26,13 +27,14 @@ interface MyState {
 }
 
 class Page extends React.Component<MyProps, MyState> {
-  constructor(props) {
+  constructor(props: MyProps) {
     super(props)
     this.state = { hours: 1 }
   }
 
   render = () => {
     console.log("Page Render State:", this.state)
+    console.log("props.router:", this.props.router)
     return (
       <Layout>
         <p style={{ color: "red" }}>
@@ -62,8 +64,6 @@ class Page extends React.Component<MyProps, MyState> {
     console.log("handleHoursChange:", event.target.value)
     const hours = parseInt(event.target.value)
     if (hours) {
-      //let { meanTimeBetweenBlocks } = await fetchData(coinFromQuery(this.props.router.query as any as IQuery), null)
-      // this.setState( { hours, meanTimeBetweenBlocks })
       this.setState({ hours })
     }
   }
@@ -71,68 +71,11 @@ class Page extends React.Component<MyProps, MyState> {
   static async getInitialProps(context: MyNextContext): Promise<MyProps> {
     const baseUrl = buildBaseUrl(context.req)
     const coin = coinFromQuery(context.query)
-    const url = buildUrl(baseUrl, coin)
     return { coin, baseUrl }
   }
 }
 
-interface DisplayFetchResultProps {
-  url: string
-  displayPropAccessor: (result: any) => string
-  loadingText?: string
-}
-
-interface DisplayFetchResultState {
-  fetchResult?: any
-}
-
-/**
- * Fetches the url and displays the value of the specified prop.
- */
-class DisplayFetchResult extends React.Component<
-  DisplayFetchResultProps,
-  DisplayFetchResultState
-> {
-  constructor(props: DisplayFetchResultProps, readonly _loadingText: string) {
-    super(props)
-    this._loadingText = props.loadingText ? props.loadingText : "Loading..."
-  }
-
-  render = () => {
-    console.log(
-      "fetchResult in render:",
-      this.state ? this.state.fetchResult : "null"
-    )
-    return (
-      <span>
-        {this.state && this.state.fetchResult
-          ? this.props.displayPropAccessor(this.state.fetchResult)
-          : this._loadingText}
-      </span>
-    )
-  }
-
-  componentDidMount = async () => {
-    return this.fetchData()
-  }
-
-  componentDidUpdate = async (prevProps: DisplayFetchResultProps) => {
-    if (this.props.url !== prevProps.url) {
-      this.fetchData()
-    }
-  }
-
-  fetchData = async () => {
-    console.log("Fetching", this.props.url, "...")
-    this.setState({ fetchResult: null })
-    const res = await fetch(this.props.url)
-    const fetchResult = await res.json()
-    console.log("Fetching", this.props.url, "complete:", fetchResult)
-    this.setState({ fetchResult })
-  }
-}
-
-const coinFromQuery = (query: IQuery) =>
+const coinFromQuery = (query: MyQuery) =>
   query && query.coin ? query.coin : "zcash"
 
 function buildBaseUrl(request?: IncomingMessage) {
@@ -153,4 +96,4 @@ function buildUrl(baseUrl: string, coin: string, hours?: number) {
   return hours ? url + `&hours=${hours}` : url
 }
 
-export default withRouter<MyProps, IQuery>(Page)
+export default withRouter<MyProps, MyQuery>(Page)
