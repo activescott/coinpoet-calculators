@@ -1,8 +1,6 @@
 - Web demo
-  + When request starts, should show "Loading..."
-  + DisplayFetchResult: Add a resultRenderer instead of a displayPropAccessor
-  + Submit fix for withRouter typing https://github.com/DefinitelyTyped/DefinitelyTyped/issues/24077
-  - switch hours to a dropdown rather than input
+  + switch hours to a dropdown rather than input
+  - enter hashrate, electricity cost, etc. chart projections. 
   - via zeit now
 
 - Test for LruNode.removeYourselfFromChain

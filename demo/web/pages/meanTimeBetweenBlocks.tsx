@@ -38,15 +38,13 @@ class Page extends React.Component<MyProps, MyState> {
     return (
       <Layout>
         <p style={{ color: "red" }}>
-          The mean time between blocks for the last
-          <input
-            type="text"
-            defaultValue={this.state.hours.toString()}
-            onChange={this.handleHoursChange}
-            pattern="\d{0,3}"
-            size={3}
-          />{" "}
-          hours is:{" "}
+          The mean time between blocks for the last &nbsp;
+          <select value={this.state.hours} onChange={this.handleHoursChange}>
+            {_.range(1, 25).map(n => (
+              <option>{n}</option>
+            ))}
+          </select>
+          &nbsp; hours is: &nbsp;
           <DisplayFetchResult
             url={buildUrl(
               this.props.baseUrl,
@@ -60,7 +58,7 @@ class Page extends React.Component<MyProps, MyState> {
     )
   }
 
-  handleHoursChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  handleHoursChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     console.log("handleHoursChange:", event.target.value)
     const hours = parseInt(event.target.value)
     if (hours) {
