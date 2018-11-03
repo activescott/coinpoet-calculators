@@ -16,7 +16,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "coinpoet-calculators": ["../../src"]
+      "coinpoet-calculators": ["../.."]
     },
     "typeRoots": ["./node_modules/@types"],
     "lib": ["dom", "es2015", "es2016"]

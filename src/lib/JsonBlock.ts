@@ -8,7 +8,7 @@ const D = new Diag("JsonBlock")
 /**
  * Provides a @see Block implementation that works from a JSON-based block.
  */
-export default class JsonBlock implements Block {
+export class JsonBlock implements Block {
   readonly chainWork: BigNumber
   constructor(
     readonly owningStorage: BlockStorage<Block>,

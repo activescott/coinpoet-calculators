@@ -29,10 +29,6 @@ class DisplayFetchResult extends React.Component<
   }
 
   render = () => {
-    console.log(
-      "fetchResult in render:",
-      this.state ? this.state.fetchResult : "null"
-    )
     return this.state && this.state.fetchResult
       ? this.props.resultRenderer(this.state.fetchResult)
       : this._loadingNode()

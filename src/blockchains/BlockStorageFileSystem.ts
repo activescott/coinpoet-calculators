@@ -4,7 +4,7 @@ import * as path from "path"
 import * as _ from "lodash"
 import { BlockStorage, Block } from "../interfaces"
 import Diag from "../lib/Diag"
-import JsonBlock from "../lib/JsonBlock"
+import { JsonBlock } from "../lib"
 
 const fs: any = BbPromise.promisifyAll(_fs)
 const D = new Diag("BlockStorageFileSystem")
@@ -15,7 +15,7 @@ const D = new Diag("BlockStorageFileSystem")
  * The JSON format is expected to be bitcoin-like (e.g. bitcoin, zcash, etc.).
  * To support other formats really just need to override @see BlockStorageFileSystem.loadBlockFile.
  */
-export default class BlockStorageFileSystem extends BlockStorage<Block> {
+export class BlockStorageFileSystem extends BlockStorage<Block> {
   /**
    * Creates a new instance of @see BlockStorageFileSystem.
    * The directory should contain files named like <height>.json where <height> is the height of the block and the file contains the header for that block as JSON.

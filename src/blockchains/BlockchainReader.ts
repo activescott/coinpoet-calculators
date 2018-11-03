@@ -8,7 +8,7 @@ const D = new Diag("BlockchainReader")
  * Provides an interface for random access reading of a blockchain.
  * Provide it a @see BlockStorage interface to read any blockchain.
  */
-export default class BlockchainReader {
+export class BlockchainReader {
   constructor(readonly storage: BlockStorage<Block>) {}
 
   /** Returns the most recently mined block available on the blockchain. */

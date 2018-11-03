@@ -1,11 +1,16 @@
 import { Request, Response } from "express"
 import { ZCashReader } from "../../shared/ZCashReader"
-import { Estimator } from "../../../src/Estimator"
+import * as _ from "lodash"
+// TODO: FIXME: import. Is this right?
+import { Estimator } from "../../../dist" //"coinpoet-calculators"
 
-export default async (req: Request, res: Response) => {
+export async function meanTimeBetweenBlocksHandler(
+  req: Request,
+  res: Response
+) {
   const secondsPerHour = 60 * 60
   const coin = req.query.coin ? req.query.coin : "zcash"
-  const hours = req.query.hours ? req.query.hours : 1
+  const hours = _.isInteger(req.query.hours) ? parseInt(req.query.hours) : 1
 
   console.log("meanTimeBetweenBlocks...")
   const value = await Estimator.meanTimeBetweenBlocks(

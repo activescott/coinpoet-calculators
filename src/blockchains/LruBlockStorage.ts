@@ -1,7 +1,7 @@
 import { Block, BlockStorage } from "../interfaces"
 
 import Diag from "../lib/Diag"
-import LruCache from "../lib/LruCache"
+import { LruCache } from "../lib"
 import proxyBlock from "./proxyBlock"
 
 const D = new Diag("LruBlockStorage")
@@ -28,7 +28,7 @@ const maxCacheItems = blocksPerDay * 30 // 17,280 VERY rarely would we go beyond
  * So 100MB of in memory blocks would be: ~24K blocks
 */
 
-export default class LruBlockStorage extends BlockStorage<Block> {
+export class LruBlockStorage extends BlockStorage<Block> {
   private readonly heightToHashCache: LruCache<number, Promise<string>>
   private readonly hashToBlockCache: LruCache<string, Promise<Block>>
 

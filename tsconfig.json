@@ -1,9 +1,11 @@
 {
-  "exclude": ["node_modules", "demo/**/*", "test-tools/**/*"],
+  "exclude": ["node_modules", "demo/**/*", "test-tools/**/*", "test/**/*"],
   "compilerOptions": {
     "target": "es6",
     "lib": ["es6"],
     "outDir": "dist",
+    "declaration": true,
+    "moduleResolution": "node", // because classic "is mainly present for backward compatibility." - https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Module%20Resolution.md#classic
     "baseUrl": ".",
     "paths": {
       "bignumber.js": ["node_modules/bignumber.js/bignumber.js"],

@@ -4,9 +4,8 @@ import * as chaiAsPromised from "chai-as-promised"
 import { expect } from "chai"
 import * as sinon from "sinon"
 import * as _ from "lodash"
-import CompositeBlockStorage from "../../src/blockchains/CompositeBlockStorage"
-import { MockBlockStorage } from "../mocks/MockBlockStorage"
-import { MockBlock } from "../mocks/MockBlock"
+import { CompositeBlockStorage } from "../../src/blockchains/CompositeBlockStorage"
+import { MockBlock, MockBlockStorage } from "../mocks"
 
 chai.use(chaiAsPromised)
 

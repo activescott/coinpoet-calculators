@@ -4,7 +4,7 @@ import * as chaiAsPromised from "chai-as-promised"
 import { expect } from "chai"
 import * as sinon from "sinon"
 
-import LruBlockStorage from "../../src/blockchains/LruBlockStorage"
+import { LruBlockStorage } from "../../src/blockchains/LruBlockStorage"
 import { MockBlock } from "../mocks/MockBlock"
 import { MockBlockStorage } from "../mocks/MockBlockStorage"
 

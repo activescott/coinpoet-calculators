@@ -3,7 +3,7 @@ import { expect } from "chai"
 import * as sinon from "sinon"
 import * as _ from "lodash"
 
-import LruCache from "../../src/lib/LruCache"
+import { LruCache } from "../../src/lib"
 
 describe("LruCache", function() {
   describe("constructor", function() {

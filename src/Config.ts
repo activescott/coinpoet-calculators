@@ -1,5 +1,5 @@
 import * as path from "path"
-export default class Config {
+export class Config {
   /**
    * Returns the path to a directory with zcash test data in it
    */

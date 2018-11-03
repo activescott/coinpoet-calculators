@@ -2,13 +2,9 @@ import React from "react"
 import { withRouter, SingletonRouter } from "next/router"
 import DisplayFetchResult from "../components/DisplayFetchResult"
 import Layout from "../components/Layout"
-import getConfig from "next/config"
 import { NextContext } from "next"
-import { Request } from "express"
 import * as _ from "lodash"
-import { IncomingMessage } from "http"
-
-const { publicRuntimeConfig } = getConfig()
+import { buildBaseUrlForApi, coinFromQuery } from "../lib"
 
 type MyNextContext = NextContext<{ coin: string }>
 
@@ -33,15 +29,15 @@ class Page extends React.Component<MyProps, MyState> {
   }
 
   render = () => {
-    console.log("Page Render State:", this.state)
-    console.log("props.router:", this.props.router)
     return (
       <Layout>
         <p style={{ color: "red" }}>
           The mean time between blocks for the last &nbsp;
           <select value={this.state.hours} onChange={this.handleHoursChange}>
             {_.range(1, 25).map(n => (
-              <option>{n}</option>
+              <option key={n} value={n}>
+                {n}
+              </option>
             ))}
           </select>
           &nbsp; hours is: &nbsp;
@@ -59,7 +55,6 @@ class Page extends React.Component<MyProps, MyState> {
   }
 
   handleHoursChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log("handleHoursChange:", event.target.value)
     const hours = parseInt(event.target.value)
     if (hours) {
       this.setState({ hours })
@@ -67,26 +62,10 @@ class Page extends React.Component<MyProps, MyState> {
   }
 
   static async getInitialProps(context: MyNextContext): Promise<MyProps> {
-    const baseUrl = buildBaseUrl(context.req)
+    const baseUrl = buildBaseUrlForApi(context.req)
     const coin = coinFromQuery(context.query)
     return { coin, baseUrl }
   }
-}
-
-const coinFromQuery = (query: MyQuery) =>
-  query && query.coin ? query.coin : "zcash"
-
-function buildBaseUrl(request?: IncomingMessage) {
-  // Next's types assume a raw nodejs request (IncomingMessage) but we happen to know Express is providing our request and it has some very handy properties:
-  const expressRequest = request as Request
-  const protocol =
-    expressRequest && expressRequest.protocol
-      ? expressRequest.protocol + ":"
-      : window.location.protocol
-  const hostname = expressRequest
-    ? expressRequest.hostname
-    : window.location.hostname
-  return `${protocol}//${hostname}:${publicRuntimeConfig.port}`
 }
 
 function buildUrl(baseUrl: string, coin: string, hours?: number) {

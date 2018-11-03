@@ -247,7 +247,7 @@ export interface EstimateDailyEarningsOptions
 /**
  * Shared options for some of the @see Estimator functions.
  */
-interface EstimateEarningsBaseOptions {
+export interface EstimateEarningsBaseOptions {
   /**
    * Your hardware's hashes/solutions per second.
    */

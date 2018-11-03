@@ -1,10 +1,12 @@
 - Web demo
   + switch hours to a dropdown rather than input
-  - enter hashrate, electricity cost, etc. chart projections. 
+  - Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
+    - Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.
+  - futureEarnings.tsx: enter hashrate, electricity cost, etc. chart projections.
   - via zeit now
 
 - Test for LruNode.removeYourselfFromChain
-- Cleanup demo/web/pages/meanTimeBetweenBlocks.tsx (separate components, etc.)
++ Cleanup demo/web/pages/meanTimeBetweenBlocks.tsx (separate components, etc.)
 - Test for CompositeBlockStorage usage of proxyBlock
 
 - Put Diag in it's own NPM Package. Using it from several places.
@@ -13,17 +15,18 @@
   - Add time & timeEnd to Diag: https://nodejs.org/api/console.html#console_console_timelog_label_data
   - Coveralls & travis for Diag
 
+
 - Create `BlockStorage` caching implementations that can have a fallback and chained together.
   + CompositeBlockStorage -> Reads from multiple block storage implementatios falling back to the best one (the one that doesn't fail or the one with the longest chain, etc.)
     + Basic Unit Tests with two mock implementions.
     + Test with mock implementations and another (normally skipped) test with real Disk+ZChain API implementations
   + LruBlockStorage -> Least recently used block storage that caches ~5K blocks?
-  - ZcashNodeRpcBlockStorage - reads directly from a zcash node's RPC interface.
-    - Why - Only make sense if we deploy zcash node in production
   + The chain for these are: Memory -> Local Disk -> ZCash Node (or zchain api)
     + Consider skipping memory and just doing local disk + rpc node or local disk + zcha.in
       + Cache blocks in memory using `height -> Block` map.
       + Cache a small number like ~7 days of blocks (576 per day ~576\*7=4K)
+  - ZcashNodeRpcBlockStorage - reads directly from a zcash node's RPC interface.
+    - Why - Only make sense if we deploy zcash node in production
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash
@@ -38,3 +41,8 @@
   - Actuall difficulty calc: https://github.com/monero-project/monero/blob/36241552b56b156c08319935baf7afda12deb3c5/src/cryptonote_basic/difficulty.cpp called by difficulty_type Blockchain::get_difficulty_for_next_block(): https://github.com/monero-project/monero/blob/36241552b56b156c08319935baf7afda12deb3c5/src/cryptonote_core/blockchain.cpp#L741 WHICH calls
 
 - X11/Quark/Qubit/Myriad-Groestl ??
+
+
+- Start reading rewardedCoinsPerMinedBlock from chain (requires reading initial transaction from each block)
+  - See https://en.bitcoin.it/wiki/Transaction#Generation
+  - See https://api.zcha.in/v2/mainnet/blocks/00000000037c2a86ce03689ae0b3704f31e29104f1a37e826d8b191585c336f8/transactions?limit=10&offset=0&sort=index&direction=ascending

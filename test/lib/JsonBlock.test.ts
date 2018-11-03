@@ -3,8 +3,8 @@ import { expect } from "chai"
 import * as sinon from "sinon"
 import * as _ from "lodash"
 
-import JsonBlock from "../../src/lib/JsonBlock"
-import { MockBlockStorage } from "../mocks/MockBlockStorage"
+import { JsonBlock } from "../../src/lib"
+import { MockBlockStorage } from "../mocks"
 
 describe("JsonBlock", function() {
   const mockTime = new Date(2009, 1, 3).valueOf() / 1000

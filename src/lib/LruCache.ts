@@ -2,7 +2,7 @@ import Diag from "./Diag"
 
 const D = new Diag("LruCache")
 
-export default class LruCache<TKey, TValue> {
+export class LruCache<TKey, TValue> {
   // most recently accessed node
   private head: LruNode<TKey, TValue> = null
   private tail: LruNode<TKey, TValue> = null
@@ -97,7 +97,7 @@ export default class LruCache<TKey, TValue> {
   }
 }
 
-class LruNode<TKey, TValue> {
+export class LruNode<TKey, TValue> {
   constructor(
     public readonly key: TKey,
     public readonly value: TValue,

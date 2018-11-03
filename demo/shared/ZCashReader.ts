@@ -1,15 +1,18 @@
-import BlockStorageFileSystem from "../../src/blockchains/BlockStorageFileSystem"
-import Config from "../../src/Config"
-import BlockStorageZChainApi from "../../src/blockchains/BlockStorageZChainApi"
-import LruBlockStorage from "../../src/blockchains/LruBlockStorage"
-import CompositeBlockStorage from "../../src/blockchains/CompositeBlockStorage"
-import BlockchainReader from "../../src/blockchains/BlockchainReader"
+import {
+  BlockStorageZChainApi,
+  BlockchainReader,
+  LruBlockStorage,
+  BlockStorageFileSystem,
+  CompositeBlockStorage
+} from "../../dist"
+//from "coinpoet-calculators"
 
 // Init ZCash chain...
 const zFileStorage = new BlockStorageFileSystem(
-  Config.zcashLargeTestDataPath,
+  "/Users/scott/Dropbox/Backups/zcash-blocks/by-height",
   false
 )
 const zchainStorage = new LruBlockStorage(new BlockStorageZChainApi())
 const zComposite = new CompositeBlockStorage(zFileStorage, zchainStorage)
+
 export const ZCashReader = new BlockchainReader(zComposite)

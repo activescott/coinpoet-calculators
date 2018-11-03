@@ -9,7 +9,7 @@ const D = new Diag("CompositeBlockStorage")
 /**
  * A @see BlockStorage implemention that will delegate it's work to a primary and if necessary a secondary @see BlockStorage.
  */
-export default class CompositeBlockStorage extends BlockStorage<Block> {
+export class CompositeBlockStorage extends BlockStorage<Block> {
   constructor(
     readonly primary: BlockStorage<Block>,
     readonly secondary: BlockStorage<Block>

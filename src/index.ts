@@ -1,5 +1,8 @@
 export * from "./BitcoinDifficulty"
 export * from "./Estimator"
-import Diag, { LogLevel } from "./lib/Diag"
 
-Diag.Level = LogLevel.WARN
+export * from "./blockchains/BlockchainReader"
+export * from "./blockchains/BlockStorageZChainApi"
+export * from "./blockchains/LruBlockStorage"
+export * from "./blockchains/BlockStorageFileSystem"
+export * from "./blockchains/CompositeBlockStorage"
