@@ -3,17 +3,20 @@ import { withRouter, SingletonRouter } from "next/router"
 import Layout from "../components/Layout"
 import { NextContext } from "next"
 import { BigNumber } from "bignumber.js"
+import IntlMessageFormat from "intl-messageformat"
+
 import {
   buildBaseUrlForApi,
   coinFromQuery,
   fetchMeanTimeBetweenBlocks
 } from "../lib"
 import { EstimateFutureEarningsOptions } from "../../../src/Estimator"
-/*
-import { ZCashReader } from "../../shared/ZCashReader"
-import { Estimator } from "../../../src/Estimator"
-*/
 
+const formStyle = {
+  margin: 20,
+  padding: 10,
+  border: "1px solid #DDD"
+}
 interface MyQuery {}
 
 interface MyProps {
@@ -22,24 +25,118 @@ interface MyProps {
   //networkHashesPerSecond: BigNumber
 }
 
-interface MyState {}
+interface MyState {
+  electricityCostKwh: number
+}
 
 type MyNextContext = NextContext<{ coin: string }>
 
 class MyPage extends React.Component<MyProps, MyState> {
   constructor(props: MyProps) {
     super(props)
+    this.state = {
+      electricityCostKwh: 0.11
+    }
   }
 
-  render = () => (
-    <Layout>
-      <p>hi futureEarnings</p>
-      <p>
-        meanNetworkSecondsBetweenBlocks:{" "}
-        {this.props.meanNetworkSecondsBetweenBlocks}
-      </p>
-    </Layout>
-  )
+  render = () => {
+    console.log("render state:", this.state)
+    return (
+      <Layout>
+        <p>hi futureEarnings</p>
+        <form style={formStyle} onSubmit={this.handleSubmit}>
+          <div className="form-group">
+            <label>
+              Electricity Cost (per kWh):
+              <input
+                id="electricityCostKwh"
+                className="form-control"
+                type="number"
+                min="0.01"
+                max="0.5"
+                step="0.01"
+                value={
+                  this.state && this.state.electricityCostKwh
+                    ? this.state.electricityCostKwh
+                    : 0
+                }
+                onChange={event =>
+                  event.target && event.target.value
+                    ? this.setState({
+                        electricityCostKwh: parseFloat(event.target.value)
+                      })
+                    : null
+                }
+              />
+            </label>
+          </div>
+          <div className="form-group">
+            <label>Email address</label>
+            <input
+              type="email"
+              className="form-control"
+              placeholder="Enter email"
+            />
+          </div>
+          <div className="form-group">
+            <label>
+              Email address2
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Enter email"
+              />
+            </label>
+          </div>
+
+          <div>
+            <input type="submit" value="BOOM" />
+          </div>
+        </form>
+        <p>
+          meanNetworkSecondsBetweenBlocks:{" "}
+          {this.formattedSecondsBetweenBlocks()}
+        </p>
+      </Layout>
+    )
+  }
+
+  componentDidMount = async () => {}
+
+  formattedCost = () => {
+    let cost =
+      this.state && this.state.electricityCostKwh
+        ? this.state.electricityCostKwh
+        : 0
+    const msg = new IntlMessageFormat("{cost, number, USD}", "en-US", {
+      number: {
+        USD: {
+          style: "currency",
+          currency: "USD"
+        }
+      }
+    })
+    return msg.format({ cost })
+  }
+
+  formattedSecondsBetweenBlocks = () => {
+    let seconds =
+      this.state && this.props.meanNetworkSecondsBetweenBlocks
+        ? this.props.meanNetworkSecondsBetweenBlocks
+        : 0
+    const msg = new IntlMessageFormat("{seconds, number}", "en-US", {
+      number: {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }
+    })
+    return msg.format({ seconds })
+  }
+
+  handleSubmit(event) {
+    console.log("Form submitted: " + this.state)
+    event.preventDefault()
+  }
 
   static async getInitialProps(context: MyNextContext): Promise<MyProps> {
     let baseUrl = buildBaseUrlForApi(context.req)

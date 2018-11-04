@@ -9,7 +9,6 @@ let config = withTypescript({
   publicRuntimeConfig: {
     // Will be available on both server and client
     port: parseInt(process.env.PORT, 10) || 3000,
-    staticFolder: "/static",
     mySecret: process.env.MY_SECRET // Pass through env variables
   },
   // See https://github.com/zeit/next.js/tree/master/examples/with-sw-precache

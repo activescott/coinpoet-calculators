@@ -2,11 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": ".next/production-server/",
-    "baseUrl": "."
-  },
-  "paths": {
-    "coinpoet-calculators": ["../.."]
-  },
-  "include": ["server/**/*.ts"]
+    "outDir": ".next/production-server/"
+  }
 }

@@ -31,7 +31,7 @@ export async function fetchMeanTimeBetweenBlocks(
   request: IncomingMessage,
   coin: string,
   hours: number = 1
-): number {
+): Promise<number> {
   const baseUrl = buildBaseUrlForApi(request)
   const url = `${baseUrl}/api/meanTimeBetweenBlocks?coin=${coin}`
   const res = await fetch(url)

@@ -12,6 +12,7 @@
     "@zeit/next-typescript": "1.1.1",
     "babel-loader": "^8.0.4",
     "express": "^4.16.4",
+    "intl-messageformat": "^2.2.0",
     "isomorphic-fetch": "^2.2.1",
     "next": "^7.0.2",
     "react": "^16.6.0",
