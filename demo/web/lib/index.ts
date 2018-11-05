@@ -21,7 +21,7 @@ export function buildBaseUrlForApi(request?: IncomingMessage) {
   const hostname = expressRequest
     ? expressRequest.hostname
     : window.location.hostname
-  return `${protocol}//${hostname}:${publicRuntimeConfig.port}`
+  return `${protocol}//${hostname}:${publicRuntimeConfig.port}/api`
 }
 
 /**
@@ -33,7 +33,7 @@ export async function fetchMeanTimeBetweenBlocks(
   hours: number = 1
 ): Promise<number> {
   const baseUrl = buildBaseUrlForApi(request)
-  const url = `${baseUrl}/api/meanTimeBetweenBlocks?coin=${coin}`
+  const url = `${baseUrl}/meanTimeBetweenBlocks?coin=${coin}`
   const res = await fetch(url)
   const fetchResult = await res.json()
   if (!fetchResult.value) {
@@ -49,3 +49,23 @@ export async function fetchMeanTimeBetweenBlocks(
 
 export const coinFromQuery = (query: { coin: string }) =>
   query && query.coin ? query.coin : "zcash"
+
+export async function apiRequest(
+  apiBaseUrl: string,
+  path: string
+): Promise<any> {
+  const url = `${apiBaseUrl}${path}`
+  console.log("apiRequest", url, "...")
+  const res = await fetch(url)
+  console.log("apiRequest", url, " complete.")
+  return res.json()
+}
+
+export interface DefaultPageProps {
+  coin: string
+  apiBaseUrl: string
+  /**
+   * Makes a request to the app's API and returns the raw JSON response.
+   */
+  apiRequest: (path: string) => Promise<any>
+}

@@ -1,7 +1,12 @@
 import * as next from "next"
 import * as express from "express"
 import { join } from "path"
-import { meanTimeBetweenBlocksHandler } from "../api/meanTimeBetweenBlocks"
+import {
+  estimateNetworkHashRateHandler,
+  estimateNetworkHashRateDailyChangeHandler,
+  meanTimeBetweenBlocksHandler,
+  fiatRateHandler
+} from "../api"
 
 const expressApp = express()
 
@@ -42,12 +47,20 @@ nextApp
         "server",
         "/service-worker.js"
       )
-      console.log("service-worker path:", filePath)
       return nextApp.serveStatic(req, res, filePath)
     })
 
     // API:
     expressApp.get("/api/meanTimeBetweenBlocks", meanTimeBetweenBlocksHandler)
+    expressApp.get(
+      "/api/estimateNetworkHashRate",
+      estimateNetworkHashRateHandler
+    )
+    expressApp.get(
+      "/api/estimateNetworkHashRateDailyChange",
+      estimateNetworkHashRateDailyChangeHandler
+    )
+    expressApp.get("/api/fiatRate", fiatRateHandler)
 
     // Let Next.js handle everything else:
     expressApp.all("*", (req, res) => {
