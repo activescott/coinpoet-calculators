@@ -3,7 +3,8 @@ import { Request, Response } from "express"
 import { ZCashReader } from "../../shared/ZCashReader"
 import * as _ from "lodash"
 // TODO: FIXME: import. Is this right?
-import { Estimator } from "../../../dist" //"coinpoet-calculators"
+import { Estimator, EstimateFutureEarningsOptions } from "../../../dist" //"coinpoet-calculators"
+import BigNumber from "bignumber.js"
 
 export async function meanTimeBetweenBlocksHandler(
   req: Request,
@@ -31,7 +32,6 @@ export async function estimateNetworkHashRateHandler(
   req: Request,
   res: Response
 ) {
-  const secondsPerHour = 60 * 60
   const coin = req.query.coin ? req.query.coin : "zcash"
   console.log("estimateNetworkHashRate...")
   const value = await Estimator.estimateNetworkHashRate(
@@ -61,7 +61,7 @@ export async function fiatRateHandler(req: Request, res: Response) {
   let json = await resp.json()
   console.log("fiat json:", json)
   let result = json.result
-  res.json({
+  return res.json({
     value: result[result.length - 1][1]
   })
 }
@@ -82,4 +82,53 @@ export async function estimateNetworkHashRateDailyChangeHandler(
   }
   console.log("estimateNetworkHashRateDailyChange complete:", resp)
   return res.json(resp)
+}
+
+export async function estimateFutureEarningsHandler(
+  req: Request,
+  res: Response
+) {
+  console.log("estimateFutureEarningsHandler...")
+  if (!req) throw new Error("request must be provided")
+  if (!res) throw new Error("response must be provided")
+
+  if (req.method !== "POST") throw new Error("Request method must be POST")
+
+  if (!req.is("json"))
+    throw new Error("Post body Content-Type must be application/json")
+
+  // TODO: confirm body is of type @see EstimateFutureEarningsOptions
+  let options = convertFutureEarningsOptions(req.body)
+  let value = await Estimator.estimateFutureEarnings(options)
+
+  console.log("estimateFutureEarnings value:", value)
+  return res.json(value)
+}
+
+function convertFutureEarningsOptions(raw: any): EstimateFutureEarningsOptions {
+  let expectedProps = [
+    "electricityCostKwh",
+    "feesAsPercent",
+    "fiatPerCoinsExchangeRate",
+    "meanNetworkSecondsBetweenBlocks",
+    "networkHashesPerSecond",
+    "networkHashRateChangePerDay",
+    "rewardedCoinsPerMinedBlock",
+    "timeHorizonInDays",
+    "watts",
+    "yourHashesPerSecond"
+  ]
+  if (!expectedProps.every(p => Reflect.has(raw, p))) {
+    throw new Error(
+      "Request body should be a EstimateFutureEarningsOptions object, but was missing one of the required properties."
+    )
+  }
+  // now a copule are BigNumber (but serialized as number):
+  const options = {
+    ...raw,
+    yourHashesPerSecond: new BigNumber(raw.yourHashesPerSecond),
+    networkHashesPerSecond: new BigNumber(raw.networkHashesPerSecond),
+    networkHashRateChangePerDay: new BigNumber(raw.networkHashRateChangePerDay)
+  }
+  return options as EstimateFutureEarningsOptions
 }

@@ -102,10 +102,13 @@ class MyPage extends React.Component<MyProps, MyState> {
   }
 
   handleSubmit = async event => {
-    console.log("estimateOptions:", await this.buildOptions())
+    let options = await this.buildOptions()
+    let resp = await this.apiRequest("/estimateFutureEarnings", "POST", options)
+    console.log("/estimateFutureEarnings response:", resp)
   }
 
-  apiRequest = async path => apiRequest(this.props.apiBaseUrl, path)
+  apiRequest = async (path, method?, body?) =>
+    apiRequest(this.props.apiBaseUrl, path, method, body)
 
   buildOptions = async (): Promise<EstimateFutureEarningsOptions> => {
     NProgress.start()

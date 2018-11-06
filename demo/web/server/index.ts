@@ -1,7 +1,9 @@
 import * as next from "next"
 import * as express from "express"
+import * as bodyParser from "body-parser"
 import { join } from "path"
 import {
+  estimateFutureEarningsHandler,
   estimateNetworkHashRateHandler,
   estimateNetworkHashRateDailyChangeHandler,
   meanTimeBetweenBlocksHandler,
@@ -9,6 +11,7 @@ import {
 } from "../api"
 
 const expressApp = express()
+expressApp.use(bodyParser.json())
 
 const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== "production"
@@ -61,6 +64,10 @@ nextApp
       estimateNetworkHashRateDailyChangeHandler
     )
     expressApp.get("/api/fiatRate", fiatRateHandler)
+    expressApp.post(
+      "/api/estimateFutureEarnings",
+      estimateFutureEarningsHandler
+    )
 
     // Let Next.js handle everything else:
     expressApp.all("*", (req, res) => {

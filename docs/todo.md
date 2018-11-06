@@ -1,6 +1,10 @@
 - Web demo
   + switch hours to a dropdown rather than input
   - futureEarnings.tsx: enter hashrate, electricity cost, etc. chart projections.
+    + form
+    + fetch estimate
+    - chart results
+
   
   - Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
     - Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.

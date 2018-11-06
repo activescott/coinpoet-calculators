@@ -52,13 +52,39 @@ export const coinFromQuery = (query: { coin: string }) =>
 
 export async function apiRequest(
   apiBaseUrl: string,
-  path: string
+  path: string,
+  method?: "GET" | "POST" | "PUT" | "DELETE",
+  body?: BodyInit
 ): Promise<any> {
   const url = `${apiBaseUrl}${path}`
-  console.log("apiRequest", url, "...")
-  const res = await fetch(url)
-  console.log("apiRequest", url, " complete.")
-  return res.json()
+  method = method ? method : "GET"
+  console.log("API request to", method, url, "...")
+
+  let options: RequestInit = {
+    method
+  }
+  if (body) {
+    options.body = typeof body === "string" ? body : JSON.stringify(body)
+    options.headers = { "Content-Type": "application/json" }
+  }
+  const res = await fetch(url, options)
+  if (res.status >= 300) {
+    throw new Error(
+      `API request to ${method} ${url} returned invalid status: ${
+        res.status
+      }: ${res.statusText}`
+    )
+  }
+  const text = await res.text()
+  try {
+    const json = JSON.parse(text)
+    console.log(`API request to ${method} ${url} complete.`)
+    return json
+  } catch (err) {
+    throw new Error(
+      `API request to ${method} ${url} returned invalid JSON response: ${text}`
+    )
+  }
 }
 
 export interface DefaultPageProps {
