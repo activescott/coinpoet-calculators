@@ -3,7 +3,10 @@
   - futureEarnings.tsx: enter hashrate, electricity cost, etc. chart projections.
     + form
     + fetch estimate
-    - chart results
+    - chart results: 
+      + Grammar: https://vega.github.io/vega-lite/examples/line.html
+      + JS: https://vega.github.io/vega/usage/
+      - Add networkHashesPerSecond as a separate layer (to separate y-axis scale): https://vega.github.io/vega-lite/docs/layer.html
 
   
   - Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"

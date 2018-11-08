@@ -1,11 +1,12 @@
 import React from "react"
 import { withRouter, SingletonRouter } from "next/router"
-import Layout from "../components/Layout"
-import { NextContext } from "next"
+import Head from "next/head"
 import { BigNumber } from "bignumber.js"
 import Form from "react-formal"
 import * as yup from "yup"
 import * as NProgress from "nprogress"
+import vegaEmbed from "vega-embed"
+import Layout from "../components/Layout"
 import { DefaultPageProps, apiRequest } from "../lib"
 import { EstimateFutureEarningsOptions } from "../../../src/Estimator"
 
@@ -21,6 +22,7 @@ interface MyState {
   timeHorizonInDays: number
   watts: number
   yourHashesPerSecond: number
+  estimateResponse: any
 }
 
 class MyPage extends React.Component<MyProps, MyState> {
@@ -32,15 +34,34 @@ class MyPage extends React.Component<MyProps, MyState> {
     } as any) as MyState
   }
 
+  componentDidMount = async () => {
+    const json = await this.apiRequest("/fiatRate")
+    this.setState({ fiatPerCoinsExchangeRate: json.value })
+  }
+
   render = () => {
+    return (
+      <Layout>
+        <h1>Future Earnings</h1>
+        {this.renderForm()}
+        {this.renderChart()}
+      </Layout>
+    )
+  }
+
+  renderForm = () => {
+    const formStyle = {
+      display: "inline-block",
+      verticalAlign: "top"
+    }
     const modelSchema = this.buildFormSchema()
-    const form = (
+    return (
       <Form
+        style={formStyle}
         schema={modelSchema}
-        defaultValue={modelSchema.default()}
+        value={this.state}
         onChange={form => {
           const values = form.valueOf()
-          console.log("form change:", values)
           this.setState({ ...values })
         }}
         onSubmit={this.handleSubmit}
@@ -93,24 +114,130 @@ class MyPage extends React.Component<MyProps, MyState> {
         </Form.Button>
       </Form>
     )
+  }
+
+  renderChart = () => {
+    const chartDivStyle = {
+      display: "inline-block",
+      border: "0px solid red",
+      width: "800px",
+      height: "600px",
+      margin: "10px"
+    }
     return (
-      <Layout>
-        <h1>Future Earnings</h1>
-        {form}
-      </Layout>
+      <React.Fragment>
+        <Head>
+          <script src="https://cdn.jsdelivr.net/npm/vega@4.3.0" key="vega" />
+          <script
+            src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc8"
+            key="vega-lite"
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/vega-embed@3.20.0"
+            key="vega-embed"
+          />
+        </Head>
+        <div
+          id="chartttt"
+          style={chartDivStyle}
+          ref={divRef => {
+            this.attachChartNode(divRef)
+          }}
+        />
+      </React.Fragment>
     )
   }
 
-  handleSubmit = async event => {
-    let options = await this.buildOptions()
-    let resp = await this.apiRequest("/estimateFutureEarnings", "POST", options)
-    console.log("/estimateFutureEarnings response:", resp)
+  attachChartNode = async (parentNode: HTMLDivElement) => {
+    if (!parentNode) {
+      return
+    }
+    // SEE: https://vega.github.io/vega/docs/api/view/
+    // TODO: Add networkHashesPerSecond as a separate layer (to separate y-axis scale): https://vega.github.io/vega-lite/docs/layer.html
+    const spec = {
+      $schema: "https://vega.github.io/schema/vega-lite/v3.json",
+      description: "ha ha ha ha ha.",
+      width: 600,
+      height: 600,
+      transform: [
+        {
+          fold: [
+            "totalProfit",
+            "totalRevenue",
+            "totalElectricCost",
+            "totalFeeCost"
+          ]
+        }
+      ],
+      data: {
+        values: null
+      },
+      layer: [
+        {
+          mark: "line",
+          encoding: {
+            x: { field: "dayNumber", type: "ordinal" },
+            y: { field: "value", type: "quantitative" },
+            color: { field: "key", type: "nominal" }
+          }
+        }
+      ]
+    } as any
+    const fakeValues = [
+      {
+        dayNumber: 1,
+        totalProfit: 0.1,
+        totalRevenue: 0.11,
+        totalElectricCost: 0.01,
+        totalFeeCost: 0.001,
+        networkHashesPerSecond: 0
+      },
+      {
+        dayNumber: 2,
+        totalProfit: 0.2,
+        totalRevenue: 0.21,
+        totalElectricCost: 0.02,
+        totalFeeCost: 0.002,
+        networkHashesPerSecond: 0
+      },
+      {
+        dayNumber: 3,
+        totalProfit: 0.3,
+        totalRevenue: 0.31,
+        totalElectricCost: 0.03,
+        totalFeeCost: 0.003,
+        networkHashesPerSecond: 0
+      }
+    ]
+    console.log("this.state.estimateResponse:", this.state.estimateResponse)
+    spec.data.values = this.state.estimateResponse
+      ? this.state.estimateResponse
+      : []
+    const options = {
+      renderer: "svg",
+      actions: false
+    }
+    await vegaEmbed(parentNode, spec, options)
+  }
+
+  handleSubmit = async () => {
+    let estimateOptions = await this.buildEstimateOptions()
+    console.log("estimateOptions:", estimateOptions)
+    let estimateResponse = await this.apiRequest(
+      "/estimateFutureEarnings",
+      "POST",
+      estimateOptions
+    )
+    console.log("/estimateFutureEarnings response:", estimateResponse)
+    this.setState({
+      estimateResponse
+    })
   }
 
   apiRequest = async (path, method?, body?) =>
     apiRequest(this.props.apiBaseUrl, path, method, body)
 
-  buildOptions = async (): Promise<EstimateFutureEarningsOptions> => {
+  buildEstimateOptions = async (): Promise<EstimateFutureEarningsOptions> => {
     NProgress.start()
     const networkHashesPerSecondPromise = this.apiRequest(
       "/estimateNetworkHashRate"
@@ -130,17 +257,10 @@ class MyPage extends React.Component<MyProps, MyState> {
       NProgress.inc()
       return json.value
     })
-    const fiatPerCoinsExchangeRatePromise = this.apiRequest("/fiatRate").then(
-      json => {
-        NProgress.inc()
-        return json.value
-      }
-    )
 
     Promise.all([
       networkHashesPerSecondPromise,
       meanNetworkSecondsBetweenBlocksPromise,
-      fiatPerCoinsExchangeRatePromise,
       networkHashRateChangePerDay
     ])
       .then(() => NProgress.done())
@@ -151,7 +271,8 @@ class MyPage extends React.Component<MyProps, MyState> {
       yourHashesPerSecond: new BigNumber(this.state.yourHashesPerSecond),
       networkHashesPerSecond: await networkHashesPerSecondPromise,
       meanNetworkSecondsBetweenBlocks: await meanNetworkSecondsBetweenBlocksPromise,
-      fiatPerCoinsExchangeRate: await fiatPerCoinsExchangeRatePromise,
+      //fiatPerCoinsExchangeRate: await fiatPerCoinsExchangeRatePromise,
+      fiatPerCoinsExchangeRate: this.state.fiatPerCoinsExchangeRate,
       // TODO: fetch (static ok for now)
       rewardedCoinsPerMinedBlock: 10, // is actually 12.5, but 2.5 is "founder reward"
       watts: this.state.watts,
@@ -187,7 +308,11 @@ class MyPage extends React.Component<MyProps, MyState> {
         .positive(),
       fiatPerCoinsExchangeRate: yup
         .number()
-        .default(150) // TODO: FETCH!
+        .default(
+          this.state && this.state.fiatPerCoinsExchangeRate
+            ? this.state.fiatPerCoinsExchangeRate
+            : 100
+        )
         .label("Fiat Exchange Rate")
         .required(
           "Please enter Fiat Exchange Rate (the exchange rate between ZCash and your fiat currency)"

@@ -4,3 +4,9 @@ yarn-error.log
 yarn.lock
 /coverage/
 /dist/
+/.nyc_output/
+/demo/web/.next
+/test-data/
+.gitignore
+.npmignore
+.prettierignore

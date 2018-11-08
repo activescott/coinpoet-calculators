@@ -25,7 +25,7 @@ Unstable. All interfaces/classes subject to change.
 
 # Usage / Example
 
-See [/demo/index.ts](demo/index.ts)
+See [/demo/cli/index.ts](demo/cli/index.ts) and [/demo/web/api/index.ts](demo/web/api/index.ts)
 
 # Todo / Roadmap
 
