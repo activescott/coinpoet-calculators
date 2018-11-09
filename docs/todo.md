@@ -6,7 +6,8 @@
     - chart results: 
       + Grammar: https://vega.github.io/vega-lite/examples/line.html
       + JS: https://vega.github.io/vega/usage/
-      - Add networkHashesPerSecond as a separate layer (to separate y-axis scale): https://vega.github.io/vega-lite/docs/layer.html
+      + Add networkHashesPerSecond as a separate layer (to separate y-axis scale): https://vega.github.io/vega-lite/docs/layer.html
+      - networkHashesPerSecond layer needs legend.
 
   
   - Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"

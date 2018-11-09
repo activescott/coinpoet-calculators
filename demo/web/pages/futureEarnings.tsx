@@ -180,8 +180,22 @@ class MyPage extends React.Component<MyProps, MyState> {
             y: { field: "value", type: "quantitative" },
             color: { field: "key", type: "nominal" }
           }
+        },
+        {
+          mark: "line",
+          encoding: {
+            x: { field: "dayNumber", type: "ordinal" },
+            y: { field: "networkHashesPerSecond", type: "quantitative" },
+            color: {
+              value: "firebrick",
+              legend: {
+                type: "symbol"
+              }
+            }
+          }
         }
-      ]
+      ],
+      resolve: { scale: { y: "independent" } }
     } as any
     const fakeValues = [
       {
