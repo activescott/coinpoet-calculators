@@ -2,15 +2,15 @@
 import { expect } from "chai"
 import * as sinon from "sinon"
 import * as _ from "lodash"
-import { BlockStorageZChainApi } from "../../src/blockchains/BlockStorageZChainApi"
+import { ZChainApiBlockStorage } from "../../src/blockchains/ZChainApiBlockStorage"
 
-describe("BlockStorageZChainApi", function() {
+describe("ZChainApiBlockStorage", function() {
   let sandbox: sinon.SinonSandbox
-  let storage: BlockStorageZChainApi
+  let storage: ZChainApiBlockStorage
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    storage = new BlockStorageZChainApi()
+    storage = new ZChainApiBlockStorage()
   })
 
   afterEach(() => {

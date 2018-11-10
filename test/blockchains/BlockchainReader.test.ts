@@ -6,7 +6,7 @@ import { existsSync } from "fs"
 import { Config } from "../../src/Config"
 import { BlockchainReader } from "../../src/blockchains/BlockchainReader"
 import { BlockStorageFileSystem } from "../../src/blockchains/BlockStorageFileSystem"
-import { BlockStorageZChainApi } from "../../src/blockchains/BlockStorageZChainApi"
+import { ZChainApiBlockStorage } from "../../src/blockchains/ZChainApiBlockStorage"
 import { MockBlockStorage } from "../mocks/MockBlockStorage"
 
 describe("BlockchainReader", function() {
@@ -25,7 +25,7 @@ describe("BlockchainReader", function() {
       console.log("Local ZCash blocks not available.")
       console.log("Fallling back to SLOOOOOW ZChain API.")
       console.log("********** ********** ********** **********")
-      reader = new BlockchainReader(new BlockStorageZChainApi())
+      reader = new BlockchainReader(new ZChainApiBlockStorage())
     }
   })
 

@@ -5,7 +5,7 @@ import { existsSync } from "fs"
 import CompositeBlockStorage from "../../src/blockchains/CompositeBlockStorage"
 import BlockStorageFileSystem from "../../src/blockchains/BlockStorageFileSystem"
 import Config from "../../src/Config"
-import BlockStorageZChainApi from "../../src/blockchains/BlockStorageZChainApi"
+import ZChainApiBlockStorage from "../../src/blockchains/ZChainApiBlockStorage"
 
 describe.skip("***** INTEGRATION TESTS *****", function() {
   this.timeout(10000)
@@ -16,7 +16,7 @@ describe.skip("***** INTEGRATION TESTS *****", function() {
         this.skip()
       }
 
-      let zchain = new BlockStorageZChainApi()
+      let zchain = new ZChainApiBlockStorage()
       const zchainCount = await zchain.getBlockCount()
       console.log("zchain count:", zchainCount)
 

@@ -1,19 +1,10 @@
 - Web demo
-  + switch hours to a dropdown rather than input
-  - futureEarnings.tsx: enter hashrate, electricity cost, etc. chart projections.
-    + form
-    + fetch estimate
-    + chart results: 
-      + Grammar: https://vega.github.io/vega-lite/examples/line.html
-      + JS: https://vega.github.io/vega/usage/
-      + Add networkHashesPerSecond as a separate layer (to separate y-axis scale): https://vega.github.io/vega-lite/docs/layer.html
-      + networkHashesPerSecond layer needs legend.
-
-  - Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
-    - Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.
+  - Make bitcoin work in the demo or remove bitcoin from the nav.
+  + Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
+    + Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.
   - via zeit now
 
-- Fit & Finish: 
+- Fit & Finish:
   - https://getbootstrap.com/docs/4.0/components/navbar/
 
 - Test for LruNode.removeYourselfFromChain

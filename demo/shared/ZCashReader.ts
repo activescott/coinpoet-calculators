@@ -1,5 +1,5 @@
 import {
-  BlockStorageZChainApi,
+  ZChainApiBlockStorage,
   BlockchainReader,
   LruBlockStorage,
   BlockStorageFileSystem,
@@ -12,7 +12,7 @@ const zFileStorage = new BlockStorageFileSystem(
   "/Users/scott/Dropbox/Backups/zcash-blocks/by-height",
   false
 )
-const zchainStorage = new LruBlockStorage(new BlockStorageZChainApi())
+const zchainStorage = new LruBlockStorage(new ZChainApiBlockStorage())
 const zComposite = new CompositeBlockStorage(zFileStorage, zchainStorage)
 
 export const ZCashReader = new BlockchainReader(zComposite)

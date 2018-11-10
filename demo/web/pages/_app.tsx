@@ -1,7 +1,7 @@
 import React from "react"
 import App, { Container } from "next/app"
 import * as _ from "lodash"
-import { apiRequest, buildBaseUrlForApi } from "../lib"
+import { buildBaseUrlForApi } from "../lib"
 
 export default class MyApp extends App {
   static async getInitialProps({ Component, router, ctx }) {

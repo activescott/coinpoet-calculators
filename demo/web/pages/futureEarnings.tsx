@@ -8,7 +8,7 @@ import * as NProgress from "nprogress"
 import vegaEmbed from "vega-embed"
 import Layout from "../components/Layout"
 import { DefaultPageProps, apiRequest } from "../lib"
-import { EstimateFutureEarningsOptions } from "../../../src/Estimator"
+import { EstimateFutureEarningsOptions } from "../../../dist"
 
 interface MyQuery {}
 
