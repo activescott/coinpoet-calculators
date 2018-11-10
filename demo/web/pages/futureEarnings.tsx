@@ -104,7 +104,11 @@ class MyPage extends React.Component<MyProps, MyState> {
         <div className="form-group">
           <label>
             Electricity Cost ($/kWh)
-            <Form.Field name="electricityCostKwh" className="form-control" />
+            <Form.Field
+              name="electricityCostKwh"
+              className="form-control"
+              step={0.01}
+            />
           </label>
           <Form.Message for="electricityCostKwh" />
         </div>
@@ -165,8 +169,24 @@ class MyPage extends React.Component<MyProps, MyState> {
             "totalProfit",
             "totalRevenue",
             "totalElectricCost",
-            "totalFeeCost"
+            "totalFeeCost",
+            "networkHashesPerSecond"
           ]
+        },
+        {
+          window: [
+            {
+              op: "last_value",
+              field: "dayNumber",
+              as: "lastDayNumber"
+            }
+          ],
+          groupby: ["key"],
+          frame: [null, null]
+        },
+        {
+          calculate: "datum.lastDayNumber === datum.dayNumber",
+          as: "isLastDay"
         }
       ],
       data: {
@@ -174,59 +194,165 @@ class MyPage extends React.Component<MyProps, MyState> {
       },
       layer: [
         {
-          mark: "line",
+          mark: {
+            type: "line",
+            style: "myLine"
+          },
+          transform: [
+            {
+              filter: {
+                field: "key",
+                oneOf: [
+                  "totalProfit",
+                  "totalRevenue",
+                  "totalElectricCost",
+                  "totalFeeCost"
+                ]
+              }
+            }
+          ],
           encoding: {
-            x: { field: "dayNumber", type: "ordinal" },
-            y: { field: "value", type: "quantitative" },
-            color: { field: "key", type: "nominal" }
+            x: {
+              field: "dayNumber",
+              type: "ordinal",
+              title: "Day Number"
+            },
+            y: {
+              field: "value",
+              type: "quantitative",
+              axis: {
+                title: "$$"
+              }
+            },
+            color: {
+              field: "key",
+              type: "nominal",
+              legend: null
+            }
           }
         },
         {
-          mark: "line",
+          mark: {
+            type: "line",
+            style: "myLine"
+          },
+          transform: [
+            {
+              filter: { field: "key", oneOf: ["networkHashesPerSecond"] }
+            }
+          ],
           encoding: {
             x: { field: "dayNumber", type: "ordinal" },
-            y: { field: "networkHashesPerSecond", type: "quantitative" },
+            y: {
+              field: "value",
+              type: "quantitative",
+              axis: {
+                title: "Hashes/Solutions per Second"
+              }
+            },
             color: {
               value: "firebrick",
-              legend: {
-                type: "symbol"
+              legend: null
+            }
+          }
+        },
+        {
+          // this text mark is for the first set of lines on one scale.
+          mark: {
+            type: "text",
+            style: "myLabel"
+          },
+          transform: [
+            { filter: { field: "isLastDay", equal: true } },
+            {
+              filter: {
+                field: "key",
+                oneOf: [
+                  "totalProfit",
+                  "totalRevenue",
+                  "totalElectricCost",
+                  "totalFeeCost"
+                ]
               }
             }
+          ],
+          encoding: {
+            y: {
+              field: "value",
+              type: "quantitative",
+              axis: null
+            },
+            x: { field: "dayNumber", type: "ordinal" },
+            text: { field: "key", type: "ordinal" }
+          }
+        },
+        {
+          // this text mark is for the networkHashesPerSecond line on its own scale.
+          mark: {
+            type: "text",
+            style: "myLabel"
+          },
+          transform: [
+            { filter: { field: "isLastDay", equal: true } },
+            { filter: { field: "key", oneOf: ["networkHashesPerSecond"] } }
+          ],
+          encoding: {
+            y: {
+              field: "value",
+              type: "quantitative",
+              axis: null
+            },
+            x: { field: "dayNumber", type: "ordinal" },
+            text: { field: "key", type: "ordinal" }
           }
         }
       ],
-      resolve: { scale: { y: "independent" } }
+      resolve: {
+        scale: { y: "independent" }
+      },
+      config: {
+        style: {
+          myLabel: {
+            align: "center",
+            baseline: "middle",
+            dy: -10
+          },
+          myLine: {
+            strokeWidth: 5
+          }
+        }
+      }
     } as any
     const fakeValues = [
       {
         dayNumber: 1,
         totalProfit: 0.1,
-        totalRevenue: 0.11,
+        totalRevenue: 0.31,
         totalElectricCost: 0.01,
         totalFeeCost: 0.001,
-        networkHashesPerSecond: 0
+        networkHashesPerSecond: 8
       },
       {
         dayNumber: 2,
         totalProfit: 0.2,
-        totalRevenue: 0.21,
-        totalElectricCost: 0.02,
+        totalRevenue: 0.32,
+        totalElectricCost: 0.03,
         totalFeeCost: 0.002,
-        networkHashesPerSecond: 0
+        networkHashesPerSecond: 9
       },
       {
         dayNumber: 3,
-        totalProfit: 0.3,
-        totalRevenue: 0.31,
-        totalElectricCost: 0.03,
+        totalProfit: 0.36,
+        totalRevenue: 0.34,
+        totalElectricCost: 0.06,
         totalFeeCost: 0.003,
-        networkHashesPerSecond: 0
+        networkHashesPerSecond: 10
       }
     ]
     console.log("this.state.estimateResponse:", this.state.estimateResponse)
     spec.data.values = this.state.estimateResponse
       ? this.state.estimateResponse
-      : []
+      : [] //fakeData
     const options = {
       renderer: "svg",
       actions: false
@@ -302,7 +428,7 @@ class MyPage extends React.Component<MyProps, MyState> {
     return yup.object({
       timeHorizonInDays: yup
         .number()
-        .default(7)
+        .default(90)
         .label("Time Horizon for how far out to estimate earnings")
         .required(
           "please provide a time horizon for how far out to estimate earnings"

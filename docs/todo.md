@@ -3,13 +3,12 @@
   - futureEarnings.tsx: enter hashrate, electricity cost, etc. chart projections.
     + form
     + fetch estimate
-    - chart results: 
+    + chart results: 
       + Grammar: https://vega.github.io/vega-lite/examples/line.html
       + JS: https://vega.github.io/vega/usage/
       + Add networkHashesPerSecond as a separate layer (to separate y-axis scale): https://vega.github.io/vega-lite/docs/layer.html
-      - networkHashesPerSecond layer needs legend.
+      + networkHashesPerSecond layer needs legend.
 
-  
   - Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
     - Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.
   - via zeit now
@@ -27,6 +26,7 @@
   - Add time & timeEnd to Diag: https://nodejs.org/api/console.html#console_console_timelog_label_data
   - Coveralls & travis for Diag
 
+- Put LruCache in it's own package
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash
