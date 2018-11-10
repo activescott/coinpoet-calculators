@@ -69,7 +69,7 @@ class Page extends React.Component<MyProps, MyState> {
 }
 
 function buildUrl(baseUrl: string, coin: string, hours?: number) {
-  let url = `${baseUrl}/api/meanTimeBetweenBlocks?coin=${coin}`
+  let url = `${baseUrl}/meanTimeBetweenBlocks?coin=${coin}`
   return hours ? url + `&hours=${hours}` : url
 }
 
