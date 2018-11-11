@@ -1,7 +1,8 @@
 - Web demo
-  - Make bitcoin work in the demo or remove bitcoin from the nav.
   + Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
     + Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.
+
+  - Make bitcoin work in the demo or remove bitcoin from the nav.
   - via zeit now
 
 - Fit & Finish:

@@ -24,15 +24,15 @@ export class JsonBlock implements Block {
     if (height < 0) throw new Error("block height must be a positive integer")
     const MILLISECONDS_PER_SECOND = 1000
     const blockTimestamp = new Date(time * MILLISECONDS_PER_SECOND)
-    if (blockTimestamp < new Date(2009, 1, 3)) {
+    if (blockTimestamp < new Date(2009, 0, 3)) {
       throw new Error(
-        `Expected block time to be later than year 2009, but found ${blockTimestamp}.`
+        `Expected block time to be later than year 2009, but found "${blockTimestamp}".`
       )
     }
     // NOTE: previousBlockHash is okay to be empty for block 0
     if (_.isEmpty(previousBlockHash) && height > 0)
       throw new Error(
-        `previousBlockHash must be provided: ${previousBlockHash}`
+        `previousBlockHash must be provided but was "${previousBlockHash}" for height "${height}".`
       )
     this.chainWork = new BigNumber("0x" + chainWorkString)
   }
