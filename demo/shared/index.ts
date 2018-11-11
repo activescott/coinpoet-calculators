@@ -3,7 +3,8 @@ import {
   BlockchainReader,
   LruBlockStorage,
   BlockStorageFileSystem,
-  CompositeBlockStorage
+  CompositeBlockStorage,
+  BitcoinApiBlockStorage
 } from "../../dist"
 //from "coinpoet-calculators"
 
@@ -16,3 +17,7 @@ const zchainStorage = new LruBlockStorage(new ZChainApiBlockStorage())
 const zComposite = new CompositeBlockStorage(zFileStorage, zchainStorage)
 
 export const ZCashReader = new BlockchainReader(zComposite)
+
+const bitcoinStorage = new LruBlockStorage(new BitcoinApiBlockStorage())
+
+export const BitcoinReader = new BlockchainReader(bitcoinStorage)

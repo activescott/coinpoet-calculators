@@ -4,17 +4,14 @@ import DisplayFetchResult from "../components/DisplayFetchResult"
 import Layout from "../components/Layout"
 import { NextContext } from "next"
 import * as _ from "lodash"
-import { buildBaseUrlForApi, coinFromQuery } from "../lib"
-
-type MyNextContext = NextContext<{ coin: string }>
+import { DefaultPageProps } from "../lib"
 
 interface MyQuery {
   coin: string
 }
 
-interface MyProps {
+interface MyProps extends DefaultPageProps {
   router?: SingletonRouter<MyQuery>
-  baseUrl: string
   coin: string
 }
 interface MyState {
@@ -43,11 +40,11 @@ class Page extends React.Component<MyProps, MyState> {
           &nbsp; hours is: &nbsp;
           <DisplayFetchResult
             url={buildUrl(
-              this.props.baseUrl,
+              this.props.apiBaseUrl,
               this.props.coin,
               this.state.hours
             )}
-            resultRenderer={obj => <span>{_.get(obj, "value")}</span>}
+            resultRenderer={obj => <span>{_.get(obj, "value")} seconds</span>}
           />
         </p>
       </Layout>
@@ -59,12 +56,6 @@ class Page extends React.Component<MyProps, MyState> {
     if (hours) {
       this.setState({ hours })
     }
-  }
-
-  static async getInitialProps(context: MyNextContext): Promise<MyProps> {
-    const baseUrl = buildBaseUrlForApi(context.req)
-    const coin = coinFromQuery(context.query)
-    return { coin, baseUrl }
   }
 }
 

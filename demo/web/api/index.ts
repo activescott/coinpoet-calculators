@@ -1,22 +1,48 @@
 import "isomorphic-fetch"
 import { Request, Response } from "express"
-import { ZCashReader } from "../../shared/ZCashReader"
+import { ZCashReader, BitcoinReader } from "../../shared"
 import * as _ from "lodash"
 // TODO: FIXME: import. Is this right?
 import { Estimator, EstimateFutureEarningsOptions } from "../../../dist" //"coinpoet-calculators"
 import BigNumber from "bignumber.js"
+import { Block } from "../../../dist"
+
+type CoinName = "zcash" | "bitcoin"
+
+async function newestBlockForCoin(coin: CoinName): Promise<Block> {
+  const coinMap = {
+    zcash: () => ZCashReader.newestBlock(),
+    bitcoin: () => BitcoinReader.newestBlock()
+  }
+  if (!Reflect.has(coinMap, coin)) {
+    throw new Error(
+      `Unrecognized coin "${coin}". Expected one of ${Reflect.ownKeys(coinMap)}`
+    )
+  }
+  return coinMap[coin]()
+}
+
+function coinFromRequest(req: Request): CoinName {
+  return req.query.coin ? req.query.coin : "zcash"
+}
+
+function hoursFromRequest(req: Request): number {
+  let hours = Number.parseInt(req.query.hours)
+  return Number.isNaN(hours) ? 1 : hours
+}
 
 export async function meanTimeBetweenBlocksHandler(
   req: Request,
   res: Response
 ) {
   const secondsPerHour = 60 * 60
-  const coin = req.query.coin ? req.query.coin : "zcash"
-  const hours = _.isInteger(req.query.hours) ? parseInt(req.query.hours) : 1
+  const coin = coinFromRequest(req)
+  const hours: number = hoursFromRequest(req)
+  console.log("hours:", req.query.hours, hours)
 
   console.log("meanTimeBetweenBlocks...")
   const value = await Estimator.meanTimeBetweenBlocks(
-    await ZCashReader.newestBlock(),
+    await newestBlockForCoin(coin),
     secondsPerHour * hours
   )
   const resp = {
@@ -32,10 +58,10 @@ export async function estimateNetworkHashRateHandler(
   req: Request,
   res: Response
 ) {
-  const coin = req.query.coin ? req.query.coin : "zcash"
+  const coin = coinFromRequest(req)
   console.log("estimateNetworkHashRate...")
   const value = await Estimator.estimateNetworkHashRate(
-    await ZCashReader.newestBlock(),
+    await newestBlockForCoin(coin),
     17
   )
   const resp = {
@@ -70,10 +96,10 @@ export async function estimateNetworkHashRateDailyChangeHandler(
   req: Request,
   res: Response
 ) {
-  const coin = req.query.coin ? req.query.coin : "zcash"
+  const coin = coinFromRequest(req)
   console.log("estimateNetworkHashRateDailyChange...")
   const value = await Estimator.estimateNetworkHashRateDailyChange(
-    await ZCashReader.newestBlock(),
+    await newestBlockForCoin(coin),
     7
   )
   const resp = {
@@ -100,8 +126,6 @@ export async function estimateFutureEarningsHandler(
   // TODO: confirm body is of type @see EstimateFutureEarningsOptions
   let options = convertFutureEarningsOptions(req.body)
   let value = await Estimator.estimateFutureEarnings(options)
-
-  console.log("estimateFutureEarnings value:", value)
   return res.json(value)
 }
 
