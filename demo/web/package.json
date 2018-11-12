@@ -31,7 +31,7 @@
     "vega": "^4.3.0",
     "vega-embed": "^3.23.1",
     "vega-lite": "^3.0.0-rc8",
-    "webpack": "^4.24.0",
+    "webpack": "^4.19.1",
     "yup": "0.26.2"
   },
   "devDependencies": {
