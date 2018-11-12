@@ -2,7 +2,7 @@ import { BigNumber } from "bignumber.js"
 import { prompt } from "inquirer"
 import * as _ from "lodash"
 import { Estimator, EstimateFutureEarningsOptions } from "../../dist"
-import { ZCashReader } from "../shared/ZCashReader"
+import { ZCashReader } from "../shared"
 
 // Demonstration of the coinpoet-calculators high-level capabilities
 async function main() {

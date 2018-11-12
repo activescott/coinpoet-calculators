@@ -23,9 +23,31 @@ A library for analyzing blockchain to estimate cryptocurrency-mining related inf
 
 Unstable. All interfaces/classes subject to change.
 
+# Compiling
+
+The package is written in TypeScript. To build the package run the following from the root of the repo:
+
+    yarn build # It will be built in /dist
+
 # Usage / Example
 
-See [/demo/cli/index.ts](demo/cli/index.ts) and [/demo/web/api/index.ts](demo/web/api/index.ts)
+## CLI Example
+
+The main code for the CLI example is in [/demo/cli/index.ts](demo/cli/index.ts). To run the command line interface example take the following steps. First, [build the package](#compiling). Next, build the example command line interface example:
+
+    cd demo/cli
+    yarn # to install dependencies
+    yarn start
+
+Then follow the prompts and it will give you the requested info.
+
+## Web Example
+
+A more sophisticated example of how the library can be used in a web application is at `/demo/web/`. The main code using the package in this example is at and [/demo/web/api/index.ts](demo/web/api/index.ts). To build this example take the following steps. First, [build the package](#compiling). Next, execute the following commands from the root of the repo:
+
+    cd demo/web
+    yarn # to install dependencies
+    yarn dev
 
 # Todo / Roadmap
 
