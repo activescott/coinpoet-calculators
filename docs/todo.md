@@ -1,16 +1,7 @@
-- Web demo
-  + Fix coinpoet-calculators inconsistent imports in web demo. Either import files or import the module "coinpoet-calculators"
-    + Importing from the root module dir is fine too. Do it from root/ or "coinpoet-calculators" but don't import individual files from module.
-
-  - Make bitcoin work in the demo or remove bitcoin from the nav.
-  - via zeit now
-
-- Fit & Finish:
-  - https://getbootstrap.com/docs/4.0/components/navbar/
-
-- Test for LruNode.removeYourselfFromChain
-+ Cleanup demo/web/pages/meanTimeBetweenBlocks.tsx (separate components, etc.)
-- Test for CompositeBlockStorage usage of proxyBlock
+- publish NPM package;
+  - Publish from master via travis (and use it for test)
+  - Like vega-embed: https://github.com/vega/vega-embed#release-process
+- prettier
 
 - Put Diag in it's own NPM Package. Using it from several places.
   - Add tests for Diag (AVA)
@@ -19,6 +10,17 @@
   - Coveralls & travis for Diag
 
 - Put LruCache in it's own package
+
+- Demo Fit & Finish:
+  - Separate API node app from front-end app so api can be scaled seperately.
+  - https://getbootstrap.com/docs/4.0/components/navbar/
+
+- Create a cache for s3. This would make it work better in serverless environment.
+
+- Test for LruNode.removeYourselfFromChain
++ Cleanup demo/web/pages/meanTimeBetweenBlocks.tsx (separate components, etc.)
+- Test for CompositeBlockStorage usage of proxyBlock
+
 
 - Ethereum Support
   - https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbyhash

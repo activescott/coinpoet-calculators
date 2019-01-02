@@ -9,6 +9,8 @@ import { Block } from "../../../dist"
 
 type CoinName = "zcash" | "bitcoin"
 
+// NOTE: to scale, the API should really be on it's own host/process with a process manager.
+
 async function newestBlockForCoin(coin: CoinName): Promise<Block> {
   const coinMap = {
     zcash: () => ZCashReader.newestBlock(),
@@ -38,9 +40,7 @@ export async function meanTimeBetweenBlocksHandler(
   const secondsPerHour = 60 * 60
   const coin = coinFromRequest(req)
   const hours: number = hoursFromRequest(req)
-  console.log("hours:", req.query.hours, hours)
-
-  console.log("meanTimeBetweenBlocks...")
+  console.time("meanTimeBetweenBlocks")
   const value = await Estimator.meanTimeBetweenBlocks(
     await newestBlockForCoin(coin),
     secondsPerHour * hours
@@ -50,7 +50,8 @@ export async function meanTimeBetweenBlocksHandler(
     coin,
     hours
   }
-  console.log("meanTimeBetweenBlocks complete:", resp)
+  console.timeEnd("meanTimeBetweenBlocks")
+  console.log("meanTimeBetweenBlocks:", resp)
   return res.json(resp)
 }
 
@@ -59,7 +60,7 @@ export async function estimateNetworkHashRateHandler(
   res: Response
 ) {
   const coin = coinFromRequest(req)
-  console.log("estimateNetworkHashRate...")
+  console.time("estimateNetworkHashRate")
   const value = await Estimator.estimateNetworkHashRate(
     await newestBlockForCoin(coin),
     17
@@ -68,6 +69,7 @@ export async function estimateNetworkHashRateHandler(
     value: value.toNumber(),
     coin
   }
+  console.timeEnd("estimateNetworkHashRate")
   console.log("estimateNetworkHashRate complete:", resp)
   return res.json(resp)
 }
@@ -97,7 +99,7 @@ export async function estimateNetworkHashRateDailyChangeHandler(
   res: Response
 ) {
   const coin = coinFromRequest(req)
-  console.log("estimateNetworkHashRateDailyChange...")
+  console.time("estimateNetworkHashRateDailyChange")
   const value = await Estimator.estimateNetworkHashRateDailyChange(
     await newestBlockForCoin(coin),
     7
@@ -106,7 +108,7 @@ export async function estimateNetworkHashRateDailyChangeHandler(
     value: value.toNumber(),
     coin
   }
-  console.log("estimateNetworkHashRateDailyChange complete:", resp)
+  console.timeEnd("estimateNetworkHashRateDailyChange")
   return res.json(resp)
 }
 
@@ -115,6 +117,7 @@ export async function estimateFutureEarningsHandler(
   res: Response
 ) {
   console.log("estimateFutureEarningsHandler...")
+  console.time("estimateFutureEarningsHandler")
   if (!req) throw new Error("request must be provided")
   if (!res) throw new Error("response must be provided")
 
@@ -126,6 +129,7 @@ export async function estimateFutureEarningsHandler(
   // TODO: confirm body is of type @see EstimateFutureEarningsOptions
   let options = convertFutureEarningsOptions(req.body)
   let value = await Estimator.estimateFutureEarnings(options)
+  console.timeEnd("estimateFutureEarningsHandler")
   return res.json(value)
 }
 
@@ -147,7 +151,7 @@ function convertFutureEarningsOptions(raw: any): EstimateFutureEarningsOptions {
       "Request body should be a EstimateFutureEarningsOptions object, but was missing one of the required properties."
     )
   }
-  // now a copule are BigNumber (but serialized as number):
+  // note some are BigNumber (but serialized as number):
   const options = {
     ...raw,
     yourHashesPerSecond: new BigNumber(raw.yourHashesPerSecond),
