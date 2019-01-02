@@ -1,20 +1,39 @@
 {
   "name": "coinpoet-calculators",
   "description": "A library to make various estimates related mining cryptocurrency including time to mine blocks and projecting future difficulty.",
+  "homepage": "https://github.com/activescott/coinpoet-calculators",
   "version": "0.0.1",
-  "repository": "https://github.com/activescott/coinpoet-calculators",
-  "license": "MPL-2.0",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "files": [
+    "/dist/"
+  ],
+  "author": {
+    "name": "Scott Willeke",
+    "email": "scott@willeke.com",
+    "url": "https://scott.willeke.com/"
+  },
+  "repository": "https://github.com/activescott/coinpoet-calculators",
+  "bugs": {
+    "url": "https://github.com/activescott/coinpoet-calculators/issues"
+  },
+  "keywords": [
+    "cryptocurrency",
+    "blockchain",
+    "zcash",
+    "bitcoin"
+  ],
+  "license": "MPL-2.0",
   "scripts": {
     "build": "rm -rfd ./dist; tsc",
     "start": "npm run test:live",
-    "lint": "./node_modules/.bin/prettier --write \"**/*\"",
+    "lint": "prettier -l \"./**/*.{js,md,yml,json,html}\"",
+    "lint-fix": "prettier --write \"./**/*.{js,md,yml,json,html}\"",
     "precommit": "pretty-quick --staged",
     "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/**/*.{ts,tsx}'",
     "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@types/bigi": "^1.4.0",
     "@types/chai-as-promised": "^7.1.0",
