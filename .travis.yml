@@ -14,8 +14,7 @@ jobs:
   include:
     - stage: Report Coverage
       node_js: "node"
-      script: echo "Running coverage report ..."
-      after_success: npm run coverage # in after_success because we don't wan't to fail the build if this failed.
+      script: npm run coverage # in after_success because we don't wan't to fail the build if this failed.
     - stage: Deploy NPM
       node_js: "node"
       script: echo "Deploying to npm ..." # explicitly having a tag here also prevents default script (i.e. tests for node_js), which have already run in prior stage: https://docs.travis-ci.com/user/build-stages/#build-stages-and-deployments

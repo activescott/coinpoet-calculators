@@ -31,7 +31,7 @@
     "precommit": "pretty-quick --staged",
     "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/**/*.{ts,tsx}'",
     "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "npm run test && nyc report --reporter=text-lcov | coveralls"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
