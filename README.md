@@ -23,12 +23,6 @@ A library for analyzing blockchain to estimate cryptocurrency-mining related inf
 
 Unstable. All interfaces/classes subject to change.
 
-# Compiling
-
-The package is written in TypeScript. To build the package run the following from the root of the repo:
-
-    yarn build # It will be built in /dist
-
 # Usage / Example
 
 ## CLI Example
@@ -52,3 +46,13 @@ A more sophisticated example of how the library can be used in a web application
 # Todo / Roadmap
 
 see [/docs/todo.md](docs/todo.md)
+
+# Building
+
+The package is written in TypeScript. To build the package run the following from the root of the repo:
+
+    yarn build # It will be built in /dist
+
+# Release Process
+
+To release a new version, merge everything to master and let the travis build run succesfully. Then tag the succesfully built commit with a semver tag beginning with `v` like `v0.1.3`. Push the tag to GitHub and Travis will build the package using the version from the tag and make the npm release automatically.

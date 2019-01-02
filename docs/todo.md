@@ -1,7 +1,6 @@
-- publish NPM package;
-  - Publish from master via travis (and use it for test)
-  - Like vega-embed: https://github.com/vega/vega-embed#release-process
-- prettier
++ publish NPM package;
+  + Publish from master via travis (and use it for test)
+  + Like vega-embed: https://github.com/vega/vega-embed#release-process
 
 - Put Diag in it's own NPM Package. Using it from several places.
   - Add tests for Diag (AVA)
