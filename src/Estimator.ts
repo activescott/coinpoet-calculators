@@ -1,6 +1,7 @@
 import * as _ from "lodash"
 import { BigNumber } from "bignumber.js"
 import { BlockWithNetworkHashRate, Block } from "./interfaces"
+import { secondsToDays } from "./lib"
 
 /**
  * Estimates earnings and other attributes of mining based on mean time between blocks and network hash rate.
@@ -189,10 +190,8 @@ export class Estimator {
   ): Promise<BigNumber> {
     if (!newestBlock) throw new Error("newestBlock cannot be null")
     let resolvedBlock: Block = await newestBlock
-
-    const toDays = seconds => seconds / (60 ^ (2 * 24))
     const elapsedDays = (newBlock: Block, oldBlock: Block) =>
-      toDays(newBlock.time - oldBlock.time)
+      secondsToDays(newBlock.time - oldBlock.time)
     let b0 = await resolvedBlock.previous()
     while (b0 && elapsedDays(resolvedBlock, b0) < days) {
       b0 = await b0.previous()
@@ -214,8 +213,7 @@ export class Estimator {
     oldBlock: BlockWithNetworkHashRate,
     newBlock: BlockWithNetworkHashRate
   ): BigNumber {
-    const SECONDS_PER_DAY = 24 * 60 * 60
-    let periodInDays = (newBlock.time - oldBlock.time) / SECONDS_PER_DAY
+    let periodInDays = secondsToDays(newBlock.time - oldBlock.time)
     let changeInHasRatePS = newBlock.networkHashRate.minus(
       oldBlock.networkHashRate
     )

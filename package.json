@@ -25,13 +25,12 @@
   "license": "MPL-2.0",
   "scripts": {
     "build": "rm -rfd ./dist; tsc",
-    "start": "npm run test:live",
     "lint": "prettier -l \"./**/*.{js,md,yml,json,html}\"",
     "lint-fix": "prettier --write \"./**/*.{js,md,yml,json,html}\"",
     "precommit": "pretty-quick --staged",
     "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/**/*.{ts,tsx}'",
     "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
-    "coverage": "npm run test && nyc report --reporter=text-lcov | coveralls"
+    "coverage": "yarn run test && nyc report --reporter=text-lcov | coveralls"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
