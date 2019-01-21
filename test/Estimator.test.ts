@@ -167,6 +167,13 @@ describe("Estimator", function() {
   })
 
   describe("estimateNetworkHashRateDailyChange", function() {
+    it("should validate newestBlock", async function() {
+      const newestBlock: Block = null
+      return expect(Estimator.estimateNetworkHashRateDailyChange(newestBlock)).to.be.rejectedWith(
+        /newestBlock cannot be null/
+      )
+    })
+
     it("1 day", async function() {
       // NOTE: for test data I just grabed some random blocks off of zchain approx 1 day apart: (~576 blocks, but I used 600 just to be sure):
       // https://api.zcha.in/v2/mainnet/blocks/400000 - Tue 25 Sep 2018 07:11:57 PDT
