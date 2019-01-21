@@ -64,7 +64,7 @@ export class Estimator {
    * Estimates earnings with the specified mining and specified network information over the specified time horizon.
    * @returns {number} The estimated amount mined in a currency that you can specify with the `fiatPerCoinsExchangeRate` parameter.
    */
-  static estimateFutureEarnings(options: EstimateFutureEarningsOptions) {
+  static estimateFutureEarnings(options: EstimateFutureEarningsOptions): Array<DayStat> {
     if (!options.timeHorizonInDays || options.timeHorizonInDays <= 0)
       throw new Error("timeHorizonInDays must be greater than zero")
 
@@ -86,7 +86,7 @@ export class Estimator {
     let totalElectricCost = 0
     let totalFeeCost = 0
     let totalProfit = 0
-    let days = []
+    let days: Array<DayStat> = []
     for (let dayNum = 0; dayNum < options.timeHorizonInDays; dayNum++) {
       let daysToMineBlock = new BigNumber(
         options.meanNetworkSecondsBetweenBlocks
@@ -95,11 +95,11 @@ export class Estimator {
           options.yourHashesPerSecond.dividedBy(options.networkHashesPerSecond)
         )
         .dividedBy(SECONDS_PER_DAY)
-      let blocksPerDay = new BigNumber(1.0)
+      let blocksPerDay: number = new BigNumber(1.0)
         .dividedBy(daysToMineBlock)
         .toNumber()
 
-      let revenue =
+      let revenue: number =
         blocksPerDay *
         options.rewardedCoinsPerMinedBlock *
         options.fiatPerCoinsExchangeRate
@@ -115,7 +115,7 @@ export class Estimator {
       let profit = revenue - (electricCost + feeCost)
       totalProfit += profit
 
-      let dayStats = {
+      let dayStats: DayStat = {
         dayNumber: dayNum,
         networkHashesPerSecond: options.networkHashesPerSecond,
         revenue,
@@ -219,6 +219,22 @@ export class Estimator {
     )
     return changeInHasRatePS.dividedBy(periodInDays.toFixed(4)) // Because BigNumber throws if >15 significant digits
   }
+}
+
+/**
+ * Information for a given day returned from @see Estimator.estimateFutureEarnings
+ */
+export interface DayStat {
+  dayNumber: number
+  networkHashesPerSecond: BigNumber
+  revenue: number
+  totalRevenue: number
+  electricCost: number
+  totalElectricCost: number
+  feeCost: number
+  totalFeeCost: number
+  profit: number
+  totalProfit: number
 }
 
 /**
