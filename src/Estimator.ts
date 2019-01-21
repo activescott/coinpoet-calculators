@@ -64,7 +64,9 @@ export class Estimator {
    * Estimates earnings with the specified mining and specified network information over the specified time horizon.
    * @returns {number} The estimated amount mined in a currency that you can specify with the `fiatPerCoinsExchangeRate` parameter.
    */
-  static estimateFutureEarnings(options: EstimateFutureEarningsOptions): Array<DayStat> {
+  static estimateFutureEarnings(
+    options: EstimateFutureEarningsOptions
+  ): Array<DayStat> {
     if (!options.timeHorizonInDays || options.timeHorizonInDays <= 0)
       throw new Error("timeHorizonInDays must be greater than zero")
 

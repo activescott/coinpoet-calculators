@@ -169,9 +169,9 @@ describe("Estimator", function() {
   describe("estimateNetworkHashRateDailyChange", function() {
     it("should validate newestBlock", async function() {
       const newestBlock: Block = null
-      return expect(Estimator.estimateNetworkHashRateDailyChange(newestBlock)).to.be.rejectedWith(
-        /newestBlock cannot be null/
-      )
+      return expect(
+        Estimator.estimateNetworkHashRateDailyChange(newestBlock)
+      ).to.be.rejectedWith(/newestBlock cannot be null/)
     })
 
     it("1 day", async function() {
