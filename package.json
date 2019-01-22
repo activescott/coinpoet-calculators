@@ -2,7 +2,7 @@
   "name": "coinpoet-calculators",
   "description": "A library to make various estimates related mining cryptocurrency including time to mine blocks and projecting future difficulty.",
   "homepage": "https://github.com/activescott/coinpoet-calculators",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "main": "dist/index.js",
   "files": [
     "/dist/"
@@ -29,8 +29,7 @@
     "lint-fix": "prettier --write \"./**/*.{ts,tsx,js,jsx,md,yml,json,html}\"",
     "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/**/*.{ts,tsx}'",
     "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
-    "coverage": "yarn run test && nyc report --reporter=text-lcov | coveralls",
-    "preversion": "yarn test"
+    "coverage": "yarn run test && nyc report --reporter=text-lcov | coveralls"
   },
   "types": "dist/index.d.ts",
   "dependencies": {

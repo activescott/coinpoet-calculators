@@ -56,6 +56,7 @@ describe("BitcoinApiBlockStorage", function() {
 
   describe("getBlock", function() {
     it("should return correct block", async function() {
+      this.timeout(5000)
       const b = await storage.getBlock(
         "00000000000000000023fd055e1d8abb7aea81ccd5d2075d783ef95c45a7d7c0"
       )
@@ -63,7 +64,7 @@ describe("BitcoinApiBlockStorage", function() {
         "hash",
         "00000000000000000023fd055e1d8abb7aea81ccd5d2075d783ef95c45a7d7c0"
       )
-      expect(b).to.have.property("height", 546464)
+      return expect(b).to.have.property("height", 546464)
     })
 
     it("should validate blockHash", async function() {
