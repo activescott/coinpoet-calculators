@@ -81,6 +81,12 @@ describe("Estimator", function() {
         .that.is.closeTo(1.1, 0.01)
     })
 
+    it("should validate null options", async function() {
+      let options = null
+      const fn = () => Estimator.estimateFutureEarnings(options)
+      return expect(fn).to.throw(/options must be provided/)
+    })
+
     it("should validate timeHorizonInDays not null", async function() {
       const options: EstimateFutureEarningsOptions = {
         timeHorizonInDays: null,

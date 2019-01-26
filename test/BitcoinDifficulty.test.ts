@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 import { expect } from "chai"
-import * as BigInteger from "bigi"
 import * as _ from "lodash"
 
 import { BitcoinDifficulty } from "../src/index"

@@ -67,6 +67,7 @@ export class Estimator {
   static estimateFutureEarnings(
     options: EstimateFutureEarningsOptions
   ): Array<DayStat> {
+    if (!options) throw new Error("options must be provided")
     if (!options.timeHorizonInDays || options.timeHorizonInDays <= 0)
       throw new Error("timeHorizonInDays must be greater than zero")
 

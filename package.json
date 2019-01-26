@@ -3,9 +3,11 @@
   "description": "A library to make various estimates related mining cryptocurrency including time to mine blocks and projecting future difficulty.",
   "homepage": "https://github.com/activescott/coinpoet-calculators",
   "version": "0.0.0",
-  "main": "dist/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/es/index.d.ts",
   "files": [
-    "/dist/"
+    "dist/"
   ],
   "author": {
     "name": "Scott Willeke",
@@ -24,18 +26,17 @@
   ],
   "license": "MPL-2.0",
   "scripts": {
-    "build": "rm -rfd ./dist; tsc",
-    "lint": "prettier -l \"./**/*.{ts,tsx,js,jsx,md,yml,json,html}\"",
-    "lint-fix": "prettier --write \"./**/*.{ts,tsx,js,jsx,md,yml,json,html}\"",
+    "build:cjs": "rm -rfd ./dist/cjs; tsc --project tsconfig.cjs.json",
+    "build:es": "rm -rfd ./dist/es; tsc --project tsconfig.es.json",
+    "build": "rm -rfd ./dist && yarn run build:es && yarn run build:cjs",
+    "lint": "prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx,md,yml,json,html}\"",
+    "lint-fix": "prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx,md,yml,json,html}\"",
     "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/**/*.{ts,tsx}'",
     "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
     "coverage": "yarn run test && nyc report --reporter=text-lcov | coveralls"
   },
-  "types": "dist/index.d.ts",
   "dependencies": {
-    "@types/bigi": "^1.4.0",
-    "@types/chai-as-promised": "^7.1.0",
-    "bignumber.js": "^7.2.1",
+    "bignumber.js": "^8.0.2",
     "bluebird": "^3.5.1",
     "cross-fetch": "^2.1.0",
     "lodash": "^4.17.11",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@types/bluebird": "^3.5.20",
     "@types/chai": "^4.1.2",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/lodash": "^4.14.117",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.0",
@@ -57,8 +59,7 @@
     "prettier": "1.14.3",
     "sinon": "^4.4.6",
     "snazzy": "^7.1.1",
-    "ts-node": "^5.0.1",
-    "typescript-eslint-parser": "^14.0.0"
+    "ts-node": "^5.0.1"
   },
   "nyc": {
     "extension": [
