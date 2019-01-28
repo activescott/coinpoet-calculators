@@ -16,7 +16,8 @@ export class JsonBlock implements Block {
     readonly height: number,
     readonly time: number,
     readonly previousBlockHash: string,
-    readonly chainWorkString: string
+    readonly chainWorkString: string,
+    readonly reward: number
   ) {
     if (!owningStorage) throw new Error("owningStorage must be provided")
     if (_.isEmpty(hash)) throw new Error("block hash must be provided")

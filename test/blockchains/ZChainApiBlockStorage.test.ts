@@ -72,11 +72,32 @@ describe("ZChainApiBlockStorage", function() {
     })
 
     it("should support block 0", async function() {
-      const fn = () =>
+      return expect(
         storage.getBlock(
           "00040fe8ec8471911baa1db1266ea15dd06b4a8a5c453883c000b031973dce08"
         )
-      return expect(fn()).to.eventually.have.property("height", 0)
+      ).to.eventually.have.property("height", 0)
+    })
+
+    describe("block reward", function() {
+      it("should know reward era 1", async function() {
+        // Reward blocks & havling info: https://z.cash/support/faq/#zec-per-block
+        // Founders reward: https://z.cash/blog/funding
+        // NOTE: We exclude founder's reward and provide only the "miner's reward".
+        return expect(
+          await storage.getBlock(
+            "00040fe8ec8471911baa1db1266ea15dd06b4a8a5c453883c000b031973dce08"
+          )
+        ).to.have.property("reward", 10)
+      })
+
+      it("should know reward era 3", async function() {
+        return expect(
+          await storage.getBlock(
+            "0000000031a021fe49de76ba35cce20ce1cbd071c30dbfebeda7bb403df9ecea"
+          )
+        ).to.have.property("reward", 10)
+      })
     })
   })
 })

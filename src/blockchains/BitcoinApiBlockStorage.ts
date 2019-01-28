@@ -63,7 +63,18 @@ export class BitcoinApiBlockStorage extends BlockStorage<Block> {
       block.id,
       new Date(block.time).valueOf() / 1000,
       prevHash,
-      block.chainwork
+      block.chainwork,
+      BitcoinApiBlockStorage.calculateRewardForBlockHeight(block.id)
     )
+  }
+
+  static calculateRewardForBlockHeight(blockHeight: number): number {
+    // https://en.bitcoin.it/wiki/Controlled_supply
+    let reward = 50.0
+    const halvings = Math.floor(blockHeight / 210000)
+    for (let i = 0; i < halvings; i++) {
+      reward /= 2
+    }
+    return reward
   }
 }

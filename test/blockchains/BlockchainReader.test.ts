@@ -17,7 +17,11 @@ describe("BlockchainReader", function() {
     sandbox = sinon.sandbox.create()
     if (existsSync(Config.zcashLargeTestDataPath)) {
       reader = new BlockchainReader(
-        new BlockStorageFileSystem(Config.zcashLargeTestDataPath)
+        new BlockStorageFileSystem(
+          Config.zcashLargeTestDataPath,
+          true,
+          ZChainApiBlockStorage.calculateRewardForBlockHeight
+        )
       )
     } else {
       // This one is damn slow but the tests will at least pass:

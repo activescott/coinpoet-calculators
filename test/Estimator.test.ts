@@ -4,12 +4,12 @@ import * as sinon from "sinon"
 import * as _ from "lodash"
 import { BigNumber } from "bignumber.js"
 import { Estimator, EstimateFutureEarningsOptions } from "../src/Estimator"
-import { secondsToDays, toTeraHashesPerSecond } from "../src/lib"
 import { BlockStorageFileSystem } from "../src/blockchains/BlockStorageFileSystem"
 import { Config } from "../src/Config"
 import { existsSync } from "fs"
 import { Block } from "../src/interfaces"
 import { MockBlock, MockBlockWithNetworkHashRate } from "./mocks/MockBlock"
+import { ZChainApiBlockStorage } from "../src/blockchains/ZChainApiBlockStorage"
 
 const TERAHASHES = 10 ** 12
 
@@ -128,7 +128,11 @@ describe("Estimator", function() {
         this.skip()
         return
       }
-      let bs = new BlockStorageFileSystem(Config.zcashLargeTestDataPath)
+      let bs = new BlockStorageFileSystem(
+        Config.zcashLargeTestDataPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
+      )
       let testBlock = await bs.getBlockFromHeight(334000)
       let val = await Estimator.blockWithNetworkHashRate(testBlock)
       // expected value comes from `docker exec zc ./src/zcash-cli getnetworkhashps 120 334000` on a zcash full node
@@ -142,7 +146,11 @@ describe("Estimator", function() {
         this.skip()
         return
       }
-      let bs = new BlockStorageFileSystem(Config.zcashLargeTestDataPath)
+      let bs = new BlockStorageFileSystem(
+        Config.zcashLargeTestDataPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
+      )
       let testBlock = await bs.getBlockFromHeight(334000)
       let val = await Estimator.estimateNetworkHashRate(testBlock, 120)
       // expected value comes from `docker exec zc ./src/zcash-cli getnetworkhashps 120 334000` on a zcash full node
@@ -155,7 +163,11 @@ describe("Estimator", function() {
     })
 
     it("should validate lookbackCount", async function() {
-      let bs = new BlockStorageFileSystem(Config.zcashTinyTestDataBlocksPath)
+      let bs = new BlockStorageFileSystem(
+        Config.zcashTinyTestDataBlocksPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
+      )
       let testBlock = await bs.getBlockFromHeight(334480)
       const fn = () => Estimator.estimateNetworkHashRate(testBlock, -1)
       return expect(fn()).to.be.rejectedWith(
@@ -164,7 +176,11 @@ describe("Estimator", function() {
     })
 
     it("should work when rate change is zero", async function() {
-      let bs = new BlockStorageFileSystem(Config.zcashTinyTestDataBlocksPath)
+      let bs = new BlockStorageFileSystem(
+        Config.zcashTinyTestDataBlocksPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
+      )
       let testBlock = await bs.getBlockFromHeight(334480)
       const fn = () => Estimator.estimateNetworkHashRate(testBlock, 0)
       let val = await fn()
@@ -321,7 +337,9 @@ describe("Estimator", function() {
 
     it("should accept block w/o promise", async function() {
       let storage = new BlockStorageFileSystem(
-        Config.zcashTinyTestDataBlocksPath
+        Config.zcashTinyTestDataBlocksPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
       )
       let block: Block = await storage.getBlockFromHeight(334482)
       const fn = async () => Estimator.meanTimeBetweenBlocks(block, 667)
@@ -330,7 +348,9 @@ describe("Estimator", function() {
 
     it("should accept block w/ promise", async function() {
       let storage = new BlockStorageFileSystem(
-        Config.zcashTinyTestDataBlocksPath
+        Config.zcashTinyTestDataBlocksPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
       )
       let block: Promise<Block> = storage.getBlockFromHeight(334482)
       const fn = async () => Estimator.meanTimeBetweenBlocks(block, 660)
@@ -339,7 +359,9 @@ describe("Estimator", function() {
 
     it("should validate lookbackTimeSpanSeconds", function() {
       let storage = new BlockStorageFileSystem(
-        Config.zcashTinyTestDataBlocksPath
+        Config.zcashTinyTestDataBlocksPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
       )
       let block: Promise<Block> = storage.getBlockFromHeight(334482)
       const fn = async () => Estimator.meanTimeBetweenBlocks(block, 0)

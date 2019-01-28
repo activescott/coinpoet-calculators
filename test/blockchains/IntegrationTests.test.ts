@@ -20,7 +20,11 @@ describe.skip("***** INTEGRATION TESTS *****", function() {
       const zchainCount = await zchain.getBlockCount()
       console.log("zchain count:", zchainCount)
 
-      let disk = new BlockStorageFileSystem(Config.zcashLargeTestDataPath)
+      let disk = new BlockStorageFileSystem(
+        Config.zcashLargeTestDataPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
+      )
       console.log("disk count:", await disk.getBlockCount())
 
       let composite1 = new CompositeBlockStorage(disk, zchain)

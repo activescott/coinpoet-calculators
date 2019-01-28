@@ -20,7 +20,8 @@ export class ZChainApiBlockStorage extends BlockStorage<Block> {
     0,
     1477641360,
     "",
-    "0000000000000000000000000000000000000000000000000000000000002000"
+    "0000000000000000000000000000000000000000000000000000000000002000",
+    ZChainApiBlockStorage.calculateRewardForBlockHeight(0)
   )
 
   async getBlockCount(): Promise<number> {
@@ -68,7 +69,29 @@ export class ZChainApiBlockStorage extends BlockStorage<Block> {
       json.height,
       json.timestamp,
       json.prevHash,
-      json.chainWork
+      json.chainWork,
+      ZChainApiBlockStorage.calculateRewardForBlockHeight(json.height)
     )
+  }
+
+  static calculateRewardForBlockHeight(blockHeight: number): number {
+    // Reward blocks & havling info: https://z.cash/support/faq/#zec-per-block
+    // Founders reward: https://z.cash/blog/funding
+    // Source: https://github.com/zcash/zcash/blob/master/src/main.cpp#L1732, https://github.com/zcash/zcash/blob/62aacb5c9526a5624ea45a27315004d1757b2d9e/src/chainparams.cpp#L87
+    const subsidyHalvingInterval = 840000
+    const subsidySlowStartInterval = 20000
+    let reward = 12.5
+    // NOTE There is some shenanigans lower than subsidySlowStartInterval that we ignore (since we're already past that)
+    const halvings = Math.floor(
+      Math.max(0, blockHeight - subsidySlowStartInterval) /
+        subsidyHalvingInterval
+    )
+    for (let i = 0; i < halvings; i++) {
+      reward /= 2
+    }
+    if (halvings === 0) {
+      reward *= 0.8 // remove founder's reward
+    }
+    return reward
   }
 }

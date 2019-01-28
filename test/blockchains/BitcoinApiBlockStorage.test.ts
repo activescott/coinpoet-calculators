@@ -86,5 +86,23 @@ describe("BitcoinApiBlockStorage", function() {
         )
       return expect(fn()).to.eventually.have.property("height", 0)
     })
+
+    describe("block reward", function() {
+      it("should know reward era 1", async function() {
+        return expect(
+          await storage.getBlock(
+            "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+          )
+        ).to.have.property("reward", 50)
+      })
+
+      it("should know reward era 3", async function() {
+        return expect(
+          await storage.getBlock(
+            "00000000000000000023fd055e1d8abb7aea81ccd5d2075d783ef95c45a7d7c0"
+          )
+        ).to.have.property("reward", 12.5)
+      })
+    })
   })
 })

@@ -24,12 +24,16 @@ export class BlockStorageFileSystem extends BlockStorage<Block> {
    */
   constructor(
     readonly dirPath: string,
-    readonly throwAndLogOnMissingFiles = true
+    readonly throwAndLogOnMissingFiles = true,
+    readonly blockRewardCalculator: (height: number) => number
   ) {
     super()
     if (throwAndLogOnMissingFiles) {
       if (!fs.existsSync(dirPath))
         throw new Error(`The path ${dirPath} does not exist.`)
+    }
+    if (!blockRewardCalculator) {
+      throw new Error("blockRewardCalculator must be provided")
     }
     D.debug("using path:", this.dirPath)
   }
@@ -105,7 +109,8 @@ export class BlockStorageFileSystem extends BlockStorage<Block> {
       json.height,
       json.time,
       json.previousblockhash,
-      json.chainwork
+      json.chainwork,
+      this.blockRewardCalculator(json.height)
     )
   }
 }

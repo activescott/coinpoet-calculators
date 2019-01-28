@@ -11,7 +11,8 @@ import {
 // Init ZCash chain...
 const zFileStorage = new BlockStorageFileSystem(
   "/Users/scott/Dropbox/Backups/zcash-blocks/by-height",
-  false
+  false,
+  ZChainApiBlockStorage.calculateRewardForBlockHeight
 )
 const zchainStorage = new LruBlockStorage(new ZChainApiBlockStorage())
 const zComposite = new CompositeBlockStorage(zFileStorage, zchainStorage)

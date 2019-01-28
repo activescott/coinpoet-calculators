@@ -4,6 +4,7 @@ import * as sinon from "sinon"
 import * as _ from "lodash"
 import { Config } from "../../src/Config"
 import { BlockStorageFileSystem } from "../../src/blockchains/BlockStorageFileSystem"
+import { ZChainApiBlockStorage } from "../../src/blockchains/ZChainApiBlockStorage"
 
 describe("BlockStorageFileSystem", function() {
   let sandbox: sinon.SinonSandbox
@@ -11,7 +12,11 @@ describe("BlockStorageFileSystem", function() {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
-    bsfs = new BlockStorageFileSystem(Config.zcashTinyTestDataBlocksPath)
+    bsfs = new BlockStorageFileSystem(
+      Config.zcashTinyTestDataBlocksPath,
+      true,
+      ZChainApiBlockStorage.calculateRewardForBlockHeight
+    )
   })
 
   afterEach(() => {
@@ -46,7 +51,11 @@ describe("BlockStorageFileSystem", function() {
     })
 
     it("should throw if not exists", async function() {
-      bsfs = new BlockStorageFileSystem(Config.emptyDirPath)
+      bsfs = new BlockStorageFileSystem(
+        Config.emptyDirPath,
+        true,
+        ZChainApiBlockStorage.calculateRewardForBlockHeight
+      )
       return expect(bsfs.getBlock("fjksdljkdafs")).to.rejectedWith(
         /Error reading hash index file/
       )
@@ -56,21 +65,33 @@ describe("BlockStorageFileSystem", function() {
   describe("throwAndLogOnMissingFiles = false", async function() {
     describe("getBlockCount", async function() {
       it("should not throw", async function() {
-        bsfs = new BlockStorageFileSystem(Config.emptyDirPath, false)
+        bsfs = new BlockStorageFileSystem(
+          Config.emptyDirPath,
+          false,
+          ZChainApiBlockStorage.calculateRewardForBlockHeight
+        )
         return expect(bsfs.getBlockCount()).to.eventually.equal(0)
       })
     })
 
     describe("getBlockHash", async function() {
       it("should not throw", async function() {
-        bsfs = new BlockStorageFileSystem(Config.emptyDirPath, false)
+        bsfs = new BlockStorageFileSystem(
+          Config.emptyDirPath,
+          false,
+          ZChainApiBlockStorage.calculateRewardForBlockHeight
+        )
         return expect(bsfs.getBlockHash(100)).to.eventually.be.null
       })
     })
 
     describe("getBlock", async function() {
       it("should not throw", async function() {
-        bsfs = new BlockStorageFileSystem(Config.emptyDirPath, false)
+        bsfs = new BlockStorageFileSystem(
+          Config.emptyDirPath,
+          false,
+          ZChainApiBlockStorage.calculateRewardForBlockHeight
+        )
         return expect(
           bsfs.getBlock(
             "000000000899b1bf24331b35b500089d75318a46abdf08644609918e68134c3f"
@@ -82,7 +103,11 @@ describe("BlockStorageFileSystem", function() {
     describe("constructor", async function() {
       it("should not throw on non-existing path", async function() {
         const fn = () =>
-          new BlockStorageFileSystem("/tmp/does/not/exist/path", false)
+          new BlockStorageFileSystem(
+            "/tmp/does/not/exist/path",
+            false,
+            ZChainApiBlockStorage.calculateRewardForBlockHeight
+          )
         expect(fn).to.not.throw
       })
     })
@@ -90,7 +115,12 @@ describe("BlockStorageFileSystem", function() {
 
   describe("constructor", async function() {
     it("should throw on non-existing path", async function() {
-      const fn = () => new BlockStorageFileSystem("/tmp/does/not/exist/path")
+      const fn = () =>
+        new BlockStorageFileSystem(
+          "/tmp/does/not/exist/path",
+          true,
+          ZChainApiBlockStorage.calculateRewardForBlockHeight
+        )
       expect(fn).to.throw
     })
   })

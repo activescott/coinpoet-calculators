@@ -13,6 +13,8 @@ export interface Block {
   readonly chainWork: BigNumber
   /** Returns the previous block in the chain. */
   previous(): Promise<Block>
+  /** The mining reward for mining a block at this block. */
+  readonly reward: number
 }
 
 /**
