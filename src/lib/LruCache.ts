@@ -1,6 +1,6 @@
 import Diag from "./Diag"
 
-const D = new Diag("LruCache")
+const D = Diag.createLogger("LruCache")
 
 export class LruCache<TKey, TValue> {
   // most recently accessed node
@@ -75,7 +75,11 @@ export class LruCache<TKey, TValue> {
       node.removeYourselfFromChain()
       node.insertYourselfBefore(this.head)
       this.head = node
-      D.assert(!this.head.previous, "expected head.previous to be null")
+      D.assert(
+        !this.head.previous,
+        "expected head.previous to be null, but was",
+        this.head.previous
+      )
     }
 
     // maintain cache size:

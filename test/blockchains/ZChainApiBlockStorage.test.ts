@@ -92,6 +92,7 @@ describe("ZChainApiBlockStorage", function() {
       })
 
       it("should know reward era 3", async function() {
+        this.timeout(4000)
         return expect(
           await storage.getBlock(
             "0000000031a021fe49de76ba35cce20ce1cbd071c30dbfebeda7bb403df9ecea"

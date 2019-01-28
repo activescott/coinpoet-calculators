@@ -4,7 +4,7 @@ import Diag from "../lib/Diag"
 import { LruCache } from "../lib"
 import proxyBlock from "./proxyBlock"
 
-const D = new Diag("LruBlockStorage")
+const D = Diag.createLogger("LruBlockStorage")
 
 const blockTime = 150
 const secondsPerDay = 60 * 60 * 24 // 86,400

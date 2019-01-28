@@ -1,7 +1,7 @@
 import { BigNumber } from "bignumber.js"
 import Diag from "./lib/Diag"
 
-const D = new Diag("BitcoinDifficulty")
+const D = Diag.createLogger("BitcoinDifficulty")
 
 function hexStrToNumber(hexStr: string): BigNumber {
   D.assert(hexStr.startsWith("0x"))

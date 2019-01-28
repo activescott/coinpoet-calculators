@@ -7,7 +7,7 @@ import Diag from "../lib/Diag"
 import { JsonBlock } from "../lib"
 
 const fs: any = BbPromise.promisifyAll(_fs)
-const D = new Diag("BlockStorageFileSystem")
+const D = Diag.createLogger("BlockStorageFileSystem")
 
 /**
  * Reads a blockchain as a seequence of JSON blocks in a single directory.

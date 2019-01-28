@@ -1,48 +1,45 @@
-export enum LogLevel {
-  NONE = 0,
-  ERROR = 1,
-  WARN = 2,
-  INFO = 3,
-  DEBUG = 4
+import * as loglevel from "loglevel-debug"
+// specify DEBUG=prefix1,prefix2:* to turn on debug support. See https://github.com/vectrlabs/loglevel-debug#usage
+
+export default abstract class Diag {
+  public static createLogger(prefix: string): Diag {
+    return new DiagImp(prefix, loglevel(prefix))
+  }
+
+  abstract debug(...args: any[]): void
+
+  abstract info(...args: any[]): void
+
+  abstract warn(...args: any[]): void
+
+  abstract error(...args: any[]): void
+
+  abstract assert(test: boolean, ...args: any[]): void
+
+  abstract childLogger(prefix: string): Diag
 }
 
-export default class Diag {
-  private _prefix: string
-  private readonly _level: LogLevel
-  public static Level: LogLevel = LogLevel.WARN
-  public static readonly NONE = 0
-  public static readonly ERROR = 1
-  public static readonly WARN = 2
-  public static readonly INFO = 3
-  public static readonly DEBUG = 4
-
-  constructor(prefix, level?: LogLevel) {
-    this._prefix = prefix
-    this._level = level ? level : Diag.Level
+class DiagImp extends Diag {
+  constructor(readonly prefix: string, readonly logger: loglevel.Logger) {
+    super()
   }
 
-  log(...args) {
-    console.log(`${this._prefix}:`, ...args)
+  debug(...args: any[]): void {
+    this.logger.debug(...args)
   }
-
-  debug(...args) {
-    if (this._level >= LogLevel.DEBUG) console.log(`${this._prefix}:`, ...args)
+  info(...args: any[]): void {
+    this.logger.info(...args)
   }
-
-  info(...args) {
-    if (this._level >= LogLevel.INFO) console.log(`${this._prefix}:`, ...args)
+  warn(...args: any[]): void {
+    this.logger.warn(...args)
   }
-
-  warn(...args) {
-    if (this._level >= LogLevel.WARN) console.log(`${this._prefix}:`, ...args)
+  error(...args: any[]): void {
+    this.logger.error(...args)
   }
-
-  error(...args) {
-    if (this._level >= LogLevel.ERROR)
-      console.error(`${this._prefix}:`, ...args)
+  assert(test: boolean, ...args: any[]): void {
+    if (!test) this.logger.error(...args)
   }
-
-  assert(test, ...args) {
-    if (this._level >= LogLevel.ERROR) console.assert(test, ...args)
+  childLogger(prefix: string): Diag {
+    return new DiagImp(prefix, this.logger.getLogger(prefix))
   }
 }

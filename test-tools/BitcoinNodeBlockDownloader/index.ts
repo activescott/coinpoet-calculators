@@ -8,7 +8,7 @@ import { mkdir, rmdir } from "./fsutil"
 import * as _ from "lodash"
 import * as program from "commander"
 
-const D = new Diag("BitcoinNodeBlockDownloader")
+const D = Diag.createLogger("BitcoinNodeBlockDownloader")
 
 // const fs = Bluebird.promisifyAll(_fs)
 const fs = _fs.promises
@@ -41,9 +41,9 @@ export class BitcoinNodeBlockDownloader {
   public async download(highestBlockHeight = 0, blockCount = 0) {
     try {
       if (!existsSync(this.indexDir)) {
-        D.log("Creating indexDir", this.indexDir, "...")
+        D.info("Creating indexDir", this.indexDir, "...")
         mkdir(this.indexDir)
-        D.log("Creating indexDir complete.")
+        D.info("Creating indexDir complete.")
       }
       if (highestBlockHeight === 0) {
         highestBlockHeight = await this.getBlockCount()
@@ -52,14 +52,14 @@ export class BitcoinNodeBlockDownloader {
         }
       }
       let blocksDownloaded = 0
-      console.log("Getting current blockheight")
+      D.info("Getting current blockheight")
       let height = highestBlockHeight
       let pendingPromises = []
       const BATCH_SIZE = Math.min(15, blockCount)
       while (highestBlockHeight - height < blockCount) {
         let dest = path.join(this.localDir, `${height}.json`)
         if (!existsSync(dest)) {
-          console.log("Fetching header at height", height)
+          D.info("Fetching header at height", height)
           const headerPromise = this.getBlockHeaderFromHeight(height)
           headerPromise
             .then(async header => {
@@ -170,10 +170,10 @@ export class BitcoinNodeBlockDownloader {
     try {
       dest = path.join(this.indexDir, block.hash)
       if (existsSync(dest)) {
-        D.log("Skipping existing index file", dest)
+        D.info("Skipping existing index file", dest)
         return
       }
-      D.log(`Writing index for ${block.hash} -> ${block.height}`)
+      D.info(`Writing index for ${block.hash} -> ${block.height}`)
       return fs.writeFile(dest, block.height.toString())
     } catch (err) {
       throw new Error(`Error writing file ${dest}:` + err.message)
@@ -185,9 +185,9 @@ export class BitcoinNodeBlockDownloader {
    */
   public async rebuildBlockhashIndex() {
     mkdir(this.indexDir)
-    D.log("Getting list of block files...")
+    D.info("Getting list of block files...")
     const blockFiles = await fs.readdir(this.localDir)
-    D.log("Getting list of block files complete.")
+    D.info("Getting list of block files complete.")
     const maxPending = 50
     let pending = []
     for (let f of blockFiles) {

@@ -2,7 +2,7 @@ import * as _ from "lodash"
 import { Block, Chain, BlockStorage } from "../interfaces"
 import Diag from "../lib/Diag"
 
-const D = new Diag("BlockchainReader")
+const D = Diag.createLogger("BlockchainReader")
 
 /**
  * Provides an interface for random access reading of a blockchain.

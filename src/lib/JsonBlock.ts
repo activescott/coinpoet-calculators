@@ -3,7 +3,7 @@ import { BigNumber } from "bignumber.js"
 import Diag from "../lib/Diag"
 import * as _ from "lodash"
 
-const D = new Diag("JsonBlock")
+const D = Diag.createLogger("JsonBlock")
 
 /**
  * Provides a @see Block implementation that works from a JSON-based block.

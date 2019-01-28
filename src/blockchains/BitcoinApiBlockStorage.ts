@@ -4,7 +4,7 @@ import { FetchImpl as fetch } from "../services"
 import { JsonBlock } from "../lib"
 import Diag from "../lib/Diag"
 
-const D = new Diag("BitcoinApiBlockStorage")
+const D = Diag.createLogger("BitcoinApiBlockStorage")
 
 /**
  * A Bitcoin Storage using a public internet-accessible API for data.

@@ -7,7 +7,8 @@ export class MockBlock implements Block {
     readonly height: number = null,
     readonly time: number = null,
     readonly previousBlockHash: string = null,
-    readonly chainWork: BigNumber = null
+    readonly chainWork: BigNumber = null,
+    readonly reward: number = null
   ) {}
 
   previous(): Promise<Block> {

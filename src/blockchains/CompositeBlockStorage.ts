@@ -4,7 +4,7 @@ import { BlockStorage, Block } from "../interfaces"
 import Diag from "../lib/Diag"
 import proxyBlock from "./proxyBlock"
 
-const D = new Diag("CompositeBlockStorage")
+const D = Diag.createLogger("CompositeBlockStorage")
 
 /**
  * A @see BlockStorage implemention that will delegate it's work to a primary and if necessary a secondary @see BlockStorage.

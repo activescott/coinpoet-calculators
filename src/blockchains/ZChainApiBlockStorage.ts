@@ -5,7 +5,7 @@ import { FetchImpl as fetch } from "../services"
 import Diag from "../lib/Diag"
 import { JsonBlock } from "../lib"
 
-const D = new Diag("ZChainApiBlockStorage")
+const D = Diag.createLogger("ZChainApiBlockStorage")
 
 /**
  * A @see BlockStorage implementation that retrieves ZCash blocks from the ZCha.in API (https://zcha.in/api).

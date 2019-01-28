@@ -8,7 +8,7 @@ import Diag from "../../src/lib/Diag"
 
 const writeFileAsync = promisify(fs.writeFile)
 
-const D = new Diag("MockFetch")
+const D = Diag.createLogger("MockFetch")
 
 /**
  * A minimal implementation of https://fetch.spec.whatwg.org for testing with local files instead of internet requests
@@ -54,7 +54,7 @@ export default class MockFetch {
     const interval = 1000 / MAXRPS
     let delay = 0
     for (let url of fromUrls) {
-      D.log("url:", url)
+      D.debug("url:", url)
       let dir = this.urlMapper(url)
       let dest = path.join(this.localDir, dir)
       let destExists
