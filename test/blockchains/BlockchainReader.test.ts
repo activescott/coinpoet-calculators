@@ -7,7 +7,7 @@ import { Config } from "../../src/Config"
 import { BlockchainReader } from "../../src/blockchains/BlockchainReader"
 import { BlockStorageFileSystem } from "../../src/blockchains/BlockStorageFileSystem"
 import { ZChainApiBlockStorage } from "../../src/blockchains/ZChainApiBlockStorage"
-import { MockBlockStorage } from "../mocks/MockBlockStorage"
+import { MockBlock, MockBlockStorage } from "../mocks"
 
 describe("BlockchainReader", function() {
   let sandbox: sinon.SinonSandbox
@@ -110,23 +110,56 @@ describe("BlockchainReader", function() {
     it.skip("should work with start time after block's time, end time before end block's time", async function() {})
   })
 
-  //TODO: DO We really need previous here? Maybe just subset is enough?
-  describe.skip("previous", function() {
-    it("should return a single ancestor", async function() {
-      let b = await reader.newestBlock()
-      let prev = await reader.previous(b)
-      expect(prev).to.have.property("height", 306252)
+  describe("previous", function() {
+    beforeEach(() => {
+      reader = new BlockchainReader(
+        new BlockStorageFileSystem(
+          Config.zcashTinyTestDataBlocksPath,
+          false,
+          ZChainApiBlockStorage.calculateRewardForBlockHeight
+        )
+      )
     })
 
-    it.skip("should return multiple ancestors", async function() {
-      let b = await reader.newestBlock()
-      let prev0 = await reader.previous(b)
-      let prev1 = await reader.previous(prev0)
-      let prev2 = await reader.previous(prev1)
+    it("should return a single ancestor", async function() {
+      let b = reader.newestBlock()
+      let prev = reader.previous(await b)
+      return expect(prev).to.eventually.not.be.null
+    })
 
-      expect(prev0).to.have.property("height", 306252)
-      expect(prev1).to.have.property("height", 306251)
-      expect(prev2).to.have.property("height", 306250)
+    it("should return multiple ancestors", async function() {
+      let b = await reader.newestBlock()
+      let prev0 = reader.previous(await b)
+      let prev1 = reader.previous(await prev0)
+      let prev2 = reader.previous(await prev1)
+
+      return Promise.all([
+        expect(prev0).to.eventually.not.be.null,
+        expect(prev1).to.eventually.not.be.null,
+        expect(prev2).to.eventually.be.null
+      ])
+    })
+
+    it("should support genesis block", async function() {
+      let mockBlock: MockBlock = new MockBlock(
+        "one",
+        1,
+        Date.now() / 1000,
+        null
+      )
+      let mockStorage = sandbox.createStubInstance<MockBlockStorage>(
+        MockBlockStorage
+      )
+      mockStorage.getBlockCount.resolves(1)
+      mockStorage.getBlockFromHeight
+        .withArgs(mockBlock.height - 1)
+        .resolves(mockBlock)
+      reader = new BlockchainReader(mockStorage)
+
+      let newest = reader.newestBlock()
+      let prev = reader.previous(await newest)
+
+      return expect(prev).to.eventually.be.null
     })
   })
 })

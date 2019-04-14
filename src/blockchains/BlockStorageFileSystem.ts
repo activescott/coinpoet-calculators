@@ -66,9 +66,9 @@ export class BlockStorageFileSystem extends BlockStorage<Block> {
     try {
       str = await fs.readFileAsync(filePath)
     } catch (err) {
+      const msg = `Error reading hash index file ${filePath}: ${err.message}`
+      D.warn(msg)
       if (this.throwAndLogOnMissingFiles) {
-        const msg = `Error reading hash index file ${filePath}: ${err.message}`
-        D.warn(msg)
         throw new Error(msg)
       } else {
         return null

@@ -20,7 +20,7 @@ export class BlockchainReader {
   /**
    * Returns the previous block of the specified block.
    */
-  previous(block: Block): Promise<Block> {
+  async previous(block: Block): Promise<Block> {
     if (block.previousBlockHash)
       return this.storage.getBlock(block.previousBlockHash)
     else return null
