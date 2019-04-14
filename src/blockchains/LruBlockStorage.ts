@@ -6,7 +6,7 @@ import proxyBlock from "./proxyBlock"
 
 const D = Diag.createLogger("LruBlockStorage")
 
-const blockTime = 150
+const blockTime = 150 // zcash blocktime. For bitcoin it is 600
 const secondsPerDay = 60 * 60 * 24 // 86,400
 const blocksPerDay = secondsPerDay / blockTime // 576
 // const maxCacheItems = blocksPerDay * 7       // ~82

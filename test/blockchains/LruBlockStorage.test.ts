@@ -84,15 +84,15 @@ describe("LruBlockStorage", function() {
   })
 
   describe("getBlockCount", function() {
-    it("should NOT return cached value", function() {
+    it("should NOT return cached value", async function() {
       let mockStorage = sandbox.createStubInstance<MockBlockStorage>(
         MockBlockStorage
       )
       mockStorage.getBlockCount.resolves(100)
       lru = new LruBlockStorage(mockStorage)
-      expect(lru.getBlockCount()).to.eventually.equal(100)
+      expect(await lru.getBlockCount()).to.equal(100)
       mockStorage.getBlockCount.resolves(101)
-      return expect(lru.getBlockCount()).to.eventually.equal(101)
+      return expect(await lru.getBlockCount()).to.equal(101)
     })
   })
 

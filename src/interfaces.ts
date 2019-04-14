@@ -65,3 +65,11 @@ export abstract class BlockStorage<TBlock extends Block> {
 export class Chain<TBlock extends Block> {
   constructor(readonly oldestBlock: TBlock, readonly newestBlock: TBlock) {}
 }
+
+export interface IWritableBlockStorage<TBlock extends Block> {
+  /**
+   * Stores the block in the storage.
+   * @param block The block to be stored
+   */
+  putBlock(block: TBlock): void
+}
