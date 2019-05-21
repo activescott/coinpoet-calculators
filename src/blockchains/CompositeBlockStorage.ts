@@ -8,6 +8,7 @@ const D = Diag.createLogger("CompositeBlockStorage")
 
 /**
  * A @see BlockStorage implemention that will delegate it's work to a primary and if necessary a secondary @see BlockStorage.
+ * @deprecated In hindsight this isn't serving any purpose well. @see CachingProxyStorage instead.
  */
 export class CompositeBlockStorage extends BlockStorage<Block> {
   constructor(
