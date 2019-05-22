@@ -6,6 +6,7 @@ clear;
 # Usage details: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html
 
 CONTAINER_NAME=ddb
+IMAGE_NAME=ddb-image
 
 if [[ "$(docker ps -a -q -f name=^/${CONTAINER_NAME}$ 2> /dev/null)" != "" ]]; then
   # image exists locally, but is it running?
@@ -17,8 +18,11 @@ if [[ "$(docker ps -a -q -f name=^/${CONTAINER_NAME}$ 2> /dev/null)" != "" ]]; t
   fi
 else
   # container doesn't yet exist in any state, download:
-  echo "Container not yet local. Downloading..."
-  docker run --name $CONTAINER_NAME --detach -p 8000:8000 amazon/dynamodb-local
+  echo "Container not yet local. Building..."
+  docker build -t ddb-image $THISDIR
+  echo
+  echo "Running..."
+  docker run --name $CONTAINER_NAME --detach -p 8000:8000 ddb-image
 fi
 
   #TODO: RUN scripts to create the table. 
