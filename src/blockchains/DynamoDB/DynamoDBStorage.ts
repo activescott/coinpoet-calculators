@@ -3,15 +3,6 @@ import { DDB } from "./DDB"
 import { DocumentClient } from "aws-sdk/clients/dynamodb"
 import Diag from "../../lib/Diag"
 
-const ALL_ATTRIBUTES: string[] = [
-  "hash",
-  "height",
-  "time",
-  "previousBlockHash",
-  "chainWork",
-  "reward"
-]
-
 const D = Diag.createLogger("DynamoDBStorage")
 
 /**
@@ -23,12 +14,14 @@ const D = Diag.createLogger("DynamoDBStorage")
  */
 export class DynamoDBStorage
   implements BlockStorage<Block>, IWritableBlockStorage<Block> {
-  private readonly ddb: DDB
-
-  public constructor(region: string, private tableName: string) {
+  public constructor(
+    region: string,
+    private readonly tableName: string,
+    private readonly ddb: DDB = null
+  ) {
     if (!region) throw new Error("region must be specified")
     if (!tableName) throw new Error("tableName must be specified")
-    this.ddb = new DDB(region)
+    this.ddb = ddb ? ddb : new DDB(region)
   }
 
   async createTable(deleteIfExists = false): Promise<void> {
@@ -69,7 +62,7 @@ export class DynamoDBStorage
       )
     } catch (err) {
       D.error("Failed to create table:", err)
-      return
+      throw err
     }
   }
 
