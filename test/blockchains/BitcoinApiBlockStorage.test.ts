@@ -88,6 +88,7 @@ describe("BitcoinApiBlockStorage", function() {
     })
 
     describe("block reward", function() {
+      this.timeout(5000)
       it("should know reward era 1", async function() {
         return expect(
           await storage.getBlock(
