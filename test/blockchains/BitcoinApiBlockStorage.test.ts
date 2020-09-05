@@ -5,6 +5,7 @@ import * as _ from "lodash"
 import { BitcoinApiBlockStorage } from "../../src/blockchains/BitcoinApiBlockStorage"
 
 describe("BitcoinApiBlockStorage", function() {
+  this.timeout(10000)
   let storage: BitcoinApiBlockStorage
 
   beforeEach(() => {
@@ -56,7 +57,6 @@ describe("BitcoinApiBlockStorage", function() {
 
   describe("getBlock", function() {
     it("should return correct block", async function() {
-      this.timeout(5000)
       const b = await storage.getBlock(
         "00000000000000000023fd055e1d8abb7aea81ccd5d2075d783ef95c45a7d7c0"
       )
@@ -88,7 +88,6 @@ describe("BitcoinApiBlockStorage", function() {
     })
 
     describe("block reward", function() {
-      this.timeout(5000)
       it("should know reward era 1", async function() {
         return expect(
           await storage.getBlock(
