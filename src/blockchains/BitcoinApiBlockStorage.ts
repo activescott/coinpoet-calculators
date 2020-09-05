@@ -10,8 +10,8 @@ const D = Diag.createLogger("BitcoinApiBlockStorage")
  * A Bitcoin Storage using a public internet-accessible API for data.
  */
 export class BitcoinApiBlockStorage extends BlockStorage<Block> {
-  async fetchJson(url: string): Promise<any> {
-    let resp = await fetch(url)
+  async fetchJson(url: URL): Promise<any> {
+    let resp = await fetch(this.authorizeRequest(url).toString())
     if (!resp.ok) {
       throw new Error(
         `Error HTTP response fetching url "${url}". Error was: ${
@@ -22,9 +22,22 @@ export class BitcoinApiBlockStorage extends BlockStorage<Block> {
     return resp.json()
   }
 
+  authorizeRequest(url: URL): URL {
+    const BLOCKCHAIR_KEY = "BLOCKCHAIR_KEY"
+    if (
+      url.hostname === "api.blockchair.com" &&
+      process.env[BLOCKCHAIR_KEY] &&
+      !url.searchParams.has("key")
+    ) {
+      console.log("adding BLOCKCHAIR_KEY to request!")
+      url.searchParams.append("key", process.env[BLOCKCHAIR_KEY])
+    }
+    return url
+  }
+
   async getBlockCount(): Promise<number> {
     const json = await this.fetchJson(
-      "https://api.blockchair.com/bitcoin/stats"
+      new URL("https://api.blockchair.com/bitcoin/stats")
     )
     return json.data.blocks
   }
@@ -35,7 +48,7 @@ export class BitcoinApiBlockStorage extends BlockStorage<Block> {
         `height must be provided as a positive integer, but was "${height}"`
       )
     const json = await this.fetchJson(
-      `https://api.blockchair.com/bitcoin/blocks?q=id(${height})`
+      new URL(`https://api.blockchair.com/bitcoin/blocks?q=id(${height})`)
     )
     if (_.size(json.data) === 0)
       throw new Error(`no block found for height "${height}"`)
@@ -47,7 +60,9 @@ export class BitcoinApiBlockStorage extends BlockStorage<Block> {
     let json
     try {
       json = await this.fetchJson(
-        `https://api.blockchair.com/bitcoin/blocks?q=hash(${blockHash})`
+        new URL(
+          `https://api.blockchair.com/bitcoin/blocks?q=hash(${blockHash})`
+        )
       )
     } catch (err) {
       throw new Error(
