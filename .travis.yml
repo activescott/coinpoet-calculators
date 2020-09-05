@@ -9,6 +9,12 @@ script:
   - yarn run lint
   - yarn run test
 
+env:
+  global:
+    # BLOCKCHAIR_KEY="secret-key-from-email"
+    #  generated with travis encrypt BLOCKCHAIR_KEY="secret-key-from-email"
+    - secure: "hH7oGkg9pk8tNJhjd45ekUn27c0DwYOkLWouqqe0IV8T1+qPd/UwMwxwodcXjBEnrQBHGIntpPkscA33Q3qQN+hic3myIPHw/s+hqUzXitUBZA0tnDirgeDAW3MJn1vnyNBD16kTILhtQUjQBwSJQezmL6CFwNv5nNbaPw8SxcXT8t2Ucb3N/bwFgc3WmwAe2NYO8AJotZ0CeMfCNmFYauzdaT+MTV9obnSEO9QwD2o2UUg6x2UtKwZNhwl474EogW/f4yjwDISU5fj2HL6ppuB6d48rFgVH9p77gDTFjBdfO7yki6ks4xGGsRH1D3/AgOJbY5Cqv7DS+1S0gT+xJmYpAWHFBky77TC8rNUZWK/YKAUW6etRnUZ58BdjQ3yijsz6jvpDTExzbmDwpZGu3NXI6MmHXjQ+O36SzNwzEw3KzX+OCdc7QRxisbEML4jpkAogTJtZsVhUpl8xSlAe3nL1Dc3iYbcppJ702DAiWSpofubnVh85uvfy/kAdZ8uKM7YDDmyONCPjiW+soenhHhcEr6gpwXYy5n0OkOU+RbFyeHpWLilvLjVoceyF0Av8tKK9etW68kGBZa6YDPSa/B9CUtyyc74iPbJwnLOhsx7tZYW48tF/nxAdUXiwSNxTBlBhRwxC9tu6K/hBfNfygXTYZesMwaYdijzSa44hZ+A="
+
 jobs:
   include:
     - stage: Report Coverage

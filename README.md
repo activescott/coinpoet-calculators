@@ -1,6 +1,6 @@
 # coinpoet-calculators
 
-[![Build Status](https://travis-ci.org/activescott/coinpoet-calculators.svg?branch=master)](https://travis-ci.org/activescott/coinpoet-calculators)
+[![Build Status](https://travis-ci.com/activescott/coinpoet-calculators.svg?branch=master)](https://travis-ci.com/activescott/coinpoet-calculators)
 [![Coverage Status](https://coveralls.io/repos/github/activescott/coinpoet-calculators/badge.svg?branch=master)](https://coveralls.io/github/activescott/coinpoet-calculators?branch=master)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
@@ -21,7 +21,7 @@ A library for analyzing blockchain to estimate cryptocurrency-mining related inf
 
 # Status
 
-Unstable. All interfaces/classes subject to change.
+Stable. Will use semver for breaking changes.
 
 # Usage / Example
 
@@ -55,4 +55,10 @@ The package is written in TypeScript. To build the package run the following fro
 
 # Release Process
 
-To release a new version, merge everything to master and let the travis build run succesfully. Then tag the succesfully built commit with a semver tag beginning with `v` like `v0.1.3`. Push the tag to GitHub and Travis will build the package using the version from the tag and make the npm release automatically.
+To release a new version, merge everything to master and let the travis build run successfully. Then tag the successfully built commit with a semver tag beginning with `v` like `v0.1.3`. Push the tag to GitHub and Travis will build the package using the version from the tag and make the npm release automatically.
+
+---
+
+[<img src="docs/blockchair-logo.svg" alt="Blockchair Logo" width="400" />](https://blockchair.com/?from=coinpoet-calculators)
+
+Thanks to [Blockchair](https://blockchair.com/?from=coinpoet-calculators) for providing a free API key for this project to pull current blockchain data from.
