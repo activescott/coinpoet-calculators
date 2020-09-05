@@ -29,8 +29,11 @@ export class BitcoinApiBlockStorage extends BlockStorage<Block> {
       process.env[BLOCKCHAIR_KEY] &&
       !url.searchParams.has("key")
     ) {
-      console.log("adding BLOCKCHAIR_KEY to request!")
       url.searchParams.append("key", process.env[BLOCKCHAIR_KEY])
+    } else {
+      console.warn(
+        "No Blockchair API key found. Add a BLOCKCHAIR_KEY environment variable to use a key."
+      )
     }
     return url
   }
