@@ -9,7 +9,7 @@
   "dependencies": {
     "commander": "^2.19.0",
     "lodash": "^4.17.13",
-    "node-fetch": "^2.2.0"
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.117",
