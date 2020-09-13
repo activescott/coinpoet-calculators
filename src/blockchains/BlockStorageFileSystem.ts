@@ -3,11 +3,11 @@ import * as _fs from "fs"
 import * as path from "path"
 import * as _ from "lodash"
 import { BlockStorage, Block } from "../interfaces"
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
 import { JsonBlock } from "../lib"
 
 const fs: any = BbPromise.promisifyAll(_fs)
-const D = Diag.createLogger("BlockStorageFileSystem")
+const D = createLogger("BlockStorageFileSystem")
 
 /**
  * Reads a blockchain as a seequence of JSON blocks in a single directory.

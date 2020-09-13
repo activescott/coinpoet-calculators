@@ -2,5 +2,5 @@
   "files.exclude": {
     "test-data/zcash-blocks/**": false
   },
-  "cSpell.words": ["bsfs"]
+  "cSpell.words": ["bsfs", "coinpoet"]
 }

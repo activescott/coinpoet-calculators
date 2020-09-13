@@ -2,9 +2,10 @@ import * as _ from "lodash"
 import { Block, BlockStorage } from "../interfaces"
 import { FetchImpl as fetch } from "../services"
 import { JsonBlock } from "../lib"
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
+import { URL } from "url"
 
-const D = Diag.createLogger("BitcoinApiBlockStorage")
+const D = createLogger("BitcoinApiBlockStorage")
 
 /**
  * A Bitcoin Storage using a public internet-accessible API for data.

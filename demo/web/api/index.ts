@@ -3,9 +3,9 @@ import { Request, Response } from "express"
 import { ZCashReader, BitcoinReader } from "../../shared"
 import * as _ from "lodash"
 // TODO: FIXME: import. Is this right?
-import { Estimator, EstimateFutureEarningsOptions } from "../../../dist" //"coinpoet-calculators"
+import { Estimator, EstimateFutureEarningsOptions } from "../../../dist/es" //"coinpoet-calculators"
 import BigNumber from "bignumber.js"
-import { Block } from "../../../dist"
+import { Block } from "../../../dist/es"
 
 type CoinName = "zcash" | "bitcoin"
 

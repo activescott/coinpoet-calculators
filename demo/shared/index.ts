@@ -5,7 +5,7 @@ import {
   BlockStorageFileSystem,
   CompositeBlockStorage,
   BitcoinApiBlockStorage
-} from "../../dist"
+} from "../../dist/es"
 //from "coinpoet-calculators"
 
 // Init ZCash chain...

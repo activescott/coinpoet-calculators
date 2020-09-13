@@ -1,10 +1,9 @@
 import { Block, BlockStorage } from "../interfaces"
-
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
 import { LruCache } from "../lib"
 import proxyBlock from "./proxyBlock"
 
-const D = Diag.createLogger("LruBlockStorage")
+const D = createLogger("LruBlockStorage")
 
 const blockTime = 150 // zcash blocktime. For bitcoin it is 600
 const secondsPerDay = 60 * 60 * 24 // 86,400

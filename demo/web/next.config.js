@@ -1,7 +1,6 @@
-const withTypescript = require("@zeit/next-typescript")
 const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin")
 
-let config = withTypescript({
+let config = {
   serverRuntimeConfig: {
     // Will only be available on the server side
     mySecret: "secret"
@@ -27,5 +26,5 @@ let config = withTypescript({
     )
     return config
   }
-})
+}
 module.exports = config

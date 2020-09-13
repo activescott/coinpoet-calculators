@@ -1,7 +1,7 @@
 import { Block, BlockStorage, IWritableBlockStorage } from "../interfaces"
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
 
-const D = Diag.createLogger("CachingProxyStorage")
+const D = createLogger("CachingProxyStorage")
 
 /**
  * Provides a caching layer between the consumer and an "origin storage".

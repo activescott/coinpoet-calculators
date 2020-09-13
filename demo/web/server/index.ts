@@ -1,5 +1,5 @@
-import * as next from "next"
-import * as express from "express"
+import next from "next"
+import express from "express"
 import * as bodyParser from "body-parser"
 import { join } from "path"
 import {

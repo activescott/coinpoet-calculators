@@ -1,6 +1,6 @@
-import Diag from "./Diag"
+import { createLogger } from "../services"
 
-const D = Diag.createLogger("LruCache")
+const D = createLogger("LruCache")
 
 export class LruCache<TKey, TValue> {
   // most recently accessed node

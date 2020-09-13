@@ -1,9 +1,9 @@
 import { Block, BlockStorage } from "../interfaces"
 import { BigNumber } from "bignumber.js"
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
 import * as _ from "lodash"
 
-const D = Diag.createLogger("JsonBlock")
+const D = createLogger("JsonBlock")
 
 /**
  * Provides a @see Block implementation that works from a JSON-based block.

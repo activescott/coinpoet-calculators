@@ -19,6 +19,13 @@
       "coinpoet-calculators": ["../.."]
     },
     "typeRoots": ["./node_modules/@types"],
-    "lib": ["dom", "es2015", "es2016"]
-  }
+    "lib": ["dom", "es2015", "es2016"],
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
 }

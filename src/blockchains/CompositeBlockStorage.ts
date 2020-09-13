@@ -1,10 +1,10 @@
 import * as _ from "lodash"
 import * as util from "util"
 import { BlockStorage, Block } from "../interfaces"
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
 import proxyBlock from "./proxyBlock"
 
-const D = Diag.createLogger("CompositeBlockStorage")
+const D = createLogger("CompositeBlockStorage")
 
 /**
  * A @see BlockStorage implemention that will delegate it's work to a primary and if necessary a secondary @see BlockStorage.

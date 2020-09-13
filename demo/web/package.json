@@ -6,16 +6,12 @@
     "start": "NODE_ENV=production node .next/production-server/web/server/index.js"
   },
   "dependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/runtime": "7.0.0-beta.55",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.0",
     "@types/isomorphic-fetch": "^0.0.34",
     "@types/nprogress": "^0.0.29",
     "@types/vega": "^0.0.30",
     "@types/yup": "^0.26.1",
-    "@zeit/next-typescript": "1.1.1",
-    "babel-loader": "^8.0.4",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "intl-messageformat": "^2.2.0",
@@ -37,7 +33,7 @@
   "devDependencies": {
     "@types/next": "^7.0.4",
     "@types/react": "^16.4.16",
-    "nodemon": "^1.18.4",
+    "nodemon": "^2.0.4",
     "ts-node": "^7.0.1"
   }
 }

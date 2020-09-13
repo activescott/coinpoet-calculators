@@ -2,10 +2,10 @@ import * as _ from "lodash"
 import { inspect } from "util"
 import { BlockStorage, Block } from "../interfaces"
 import { FetchImpl as fetch } from "../services"
-import Diag from "../lib/Diag"
+import { createLogger } from "../services"
 import { JsonBlock } from "../lib"
 
-const D = Diag.createLogger("ZChainApiBlockStorage")
+const D = createLogger("ZChainApiBlockStorage")
 
 /**
  * A @see BlockStorage implementation that retrieves ZCash blocks from the ZCha.in API (https://zcha.in/api).
