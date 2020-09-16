@@ -7,7 +7,7 @@
 
 A library for analyzing blockchain to estimate cryptocurrency-mining related information like time to mine blocks, future difficulty, and future earnings.
 
-# Features
+## Features
 
 - Makes estimates about difficulty, block mining time, network hash rate, and mining earnings
 - Uses actual data off of recent blocks in the blockchain itself as input.
@@ -19,13 +19,13 @@ A library for analyzing blockchain to estimate cryptocurrency-mining related inf
 - ZCash support (designed around a set of primitives to support other blockchains)
 - Unit tested
 
-# Status
+## Status
 
 Stable. Will use semver for breaking changes.
 
-# Usage / Example
+## Usage / Example
 
-## CLI Example
+### CLI Example
 
 The main code for the CLI example is in [/demo/cli/index.ts](demo/cli/index.ts). To run the command line interface example take the following steps. First, [build the package](#compiling). Next, build the example command line interface example:
 
@@ -35,7 +35,7 @@ The main code for the CLI example is in [/demo/cli/index.ts](demo/cli/index.ts).
 
 Then follow the prompts and it will give you the requested info.
 
-## Web Example
+### Web Example
 
 A more sophisticated example of how the library can be used in a web application is at `/demo/web/`. The main code using the package in this example is at and [/demo/web/api/index.ts](demo/web/api/index.ts). To build this example take the following steps. First, [build the package](#compiling). Next, execute the following commands from the root of the repo:
 
@@ -43,17 +43,17 @@ A more sophisticated example of how the library can be used in a web application
     npm i # to install dependencies
     npm run -s dev
 
-# Todo / Roadmap
+## Todo / Roadmap
 
 see [/docs/todo.md](docs/todo.md)
 
-# Building
+## Building
 
 The package is written in TypeScript. To build the package run the following from the root of the repo:
 
     npm run -s build # It will be built in /dist
 
-# Release Process
+### Release Process
 
 To release a new version, merge everything to master and let the travis build run successfully. Then tag the successfully built commit with a semver tag beginning with `v` like `v0.1.3`. Push the tag to GitHub and Travis will build the package using the version from the tag and make the npm release automatically.
 
@@ -62,3 +62,17 @@ To release a new version, merge everything to master and let the travis build ru
 [<img src="docs/blockchair-logo.svg" alt="Blockchair Logo" width="400" />](https://blockchair.com/?from=coinpoet-calculators)
 
 Thanks to [Blockchair](https://blockchair.com/?from=coinpoet-calculators) for providing a free API key for this project to pull current blockchain data from.
+
+## Some handy commands
+
+Download the most recent 100 blocks from a specific host and specific port:
+
+    npm run build && block-downloader download --node http://blackbox.local:8000 --count 100
+
+Download block 334000 and the 100 preceding blocks from a specific host and specific port:
+
+    npm run build && block-downloader download --node http://blackbox.local:8000 --blockheight 334000 --count 100
+
+Delete default location of json blocks on filesystem:
+
+    rm -vrf /Users/scott/Dropbox/Backups/zcash-blocks/by-height/*
