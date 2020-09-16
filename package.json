@@ -28,12 +28,12 @@
   "scripts": {
     "build:cjs": "rm -rfd ./dist/cjs; tsc --project tsconfig.cjs.json",
     "build:es": "rm -rfd ./dist/es; tsc --project tsconfig.es.json",
-    "build": "rm -rfd ./dist && yarn run build:es && yarn run build:cjs",
+    "build": "rm -rfd ./dist && npm run -s build:es && npm run -s build:cjs",
     "lint": "prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx,md,yml,json,html}\"",
     "lint-fix": "prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx,md,yml,json,html}\"",
-    "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/**/*.{ts,tsx}'",
-    "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
-    "coverage": "yarn run test && nyc report --reporter=text-lcov | coveralls"
+    "test": "nyc --reporter=html --reporter=text mocha --require ts-node/register 'test/support/setup_env.ts' 'test/**/*.{ts,tsx}'",
+    "test:live": "./node_modules/.bin/mocha --watch --require ts-node/register --watch-extensions ts,tsx 'test/support/setup_env.ts' 'test/**/*.{ts,tsx}'",
+    "coverage": "npm run -s test && nyc report --reporter=text-lcov | coveralls"
   },
   "dependencies": {
     "@activescott/diag-winston": "^1.0.1-beta.2",
@@ -55,6 +55,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.2",
+    "dotenv": "^8.2.0",
     "eslint-plugin-typescript": "^0.9.0",
     "mocha": "^5.0.1",
     "nyc": "^13.1.0",

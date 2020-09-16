@@ -25,11 +25,11 @@ async function newestBlockForCoin(coin: CoinName): Promise<Block> {
 }
 
 function coinFromRequest(req: Request): CoinName {
-  return req.query.coin ? req.query.coin : "zcash"
+  return req.query.coin ? (req.query.coin as CoinName) : "zcash"
 }
 
 function hoursFromRequest(req: Request): number {
-  let hours = Number.parseInt(req.query.hours)
+  let hours = Number.parseInt(req.query.hours as string)
   return Number.isNaN(hours) ? 1 : hours
 }
 

@@ -75,8 +75,7 @@ nextApp
       return nextRequestHandler(req, res)
     })
 
-    expressApp.listen(port, err => {
-      if (err) throw err
+    expressApp.listen(port, () => {
       console.log(`> Ready on http://localhost:${port}`)
     })
   })

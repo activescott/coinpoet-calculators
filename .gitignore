@@ -1,7 +1,9 @@
 node_modules/
-/yarn-error.log
 /coverage/
 /.nyc_output/
 /dist/
 /demo/web/.next/
 diag-log.log
+node_modules.jic/
+/test-tools/BitcoinNodeBlockDownloader/dist/
+.env

@@ -6,7 +6,7 @@ const fs = require("fs")
  * Cleans the specified directory by deleting all contents but making sure the directory exists.
  * @param {string} dir The directory to clean.
  */
-function cleanDir(outDir) {
+export function cleanDir(outDir: string) {
   if (fs.existsSync(outDir)) {
     rmdir(outDir)
   }
@@ -16,7 +16,7 @@ function cleanDir(outDir) {
 /**
  * Makes the specified directory and all parent directories as needed.
  */
-function mkdir(dirname) {
+export function mkdir(dirname: string) {
   let dirs = dirname.split(path.sep)
   if (dirs[0] === "") {
     // first was a rooted dir
@@ -34,7 +34,7 @@ function mkdir(dirname) {
 /**
  * Recursively removes the directory and all of its contents.
  */
-function rmdir(dir) {
+export function rmdir(dir: string) {
   let list = fs.readdirSync(dir)
   for (let i = 0; i < list.length; i++) {
     let filename = path.join(dir, list[i])
@@ -51,10 +51,4 @@ function rmdir(dir) {
     }
   }
   fs.rmdirSync(dir)
-}
-
-module.exports = {
-  cleanDir,
-  mkdir,
-  rmdir
 }

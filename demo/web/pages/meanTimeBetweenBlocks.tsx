@@ -2,7 +2,6 @@ import React from "react"
 import { withRouter, SingletonRouter } from "next/router"
 import DisplayFetchResult from "../components/DisplayFetchResult"
 import Layout from "../components/Layout"
-import { NextContext } from "next"
 import * as _ from "lodash"
 import { DefaultPageProps } from "../lib"
 

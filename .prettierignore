@@ -3,3 +3,4 @@ coverage/
 demo/web/.next
 dist/
 docs/todo.md
+node_modules/

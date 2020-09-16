@@ -4,7 +4,7 @@ import Layout from "../components/Layout"
 
 const linkStyle = {}
 
-export default () => (
+const Page = () => (
   <Layout>
     <ul>
       <li>
@@ -25,3 +25,4 @@ export default () => (
     </ul>
   </Layout>
 )
+export default Page

@@ -7,5 +7,5 @@ die () {
 	exit $@
 }
 
-yarn run lint || die $?
-yarn run test || die $?
+npm run -s lint || die $?
+npm run -s test || die $?

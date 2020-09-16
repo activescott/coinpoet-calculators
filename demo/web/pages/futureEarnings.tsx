@@ -1,19 +1,20 @@
-import React from "react"
+import React, { useState } from "react"
 import { withRouter, SingletonRouter } from "next/router"
 import Head from "next/head"
 import { BigNumber } from "bignumber.js"
-import Form from "react-formal"
 import * as yup from "yup"
 import * as NProgress from "nprogress"
 import vegaEmbed from "vega-embed"
 import Layout from "../components/Layout"
-import { DefaultPageProps, apiRequest } from "../lib"
-import { EstimateFutureEarningsOptions } from "../../../dist"
+import { DefaultPageProps, apiRequest as apiRequestLib } from "../lib"
+import { EstimateFutureEarningsOptions } from "../../../dist/es"
+import { useForm } from "react-hook-form"
+import { Renderers } from "vega"
 
 interface MyQuery {}
 
 interface MyProps extends DefaultPageProps {
-  router?: SingletonRouter<MyQuery>
+  router: SingletonRouter
 }
 
 interface MyState {
@@ -25,102 +26,205 @@ interface MyState {
   estimateResponse: any
 }
 
-class MyPage extends React.Component<MyProps, MyState> {
-  constructor(props: MyProps) {
-    super(props)
-    const modelSchema = this.buildFormSchema()
-    this.state = ({
-      ...modelSchema.default()
-    } as any) as MyState
+// TODO: Kill yup
+const buildFormSchema = (fiatPerCoinsExchangeRate?: Number) => {
+  return yup.object({
+    timeHorizonInDays: yup
+      .number()
+      .default(90)
+      .label("Time Horizon for how far out to estimate earnings")
+      .required(
+        "please provide a time horizon for how far out to estimate earnings"
+      )
+      .positive(),
+    yourHashesPerSecond: yup
+      .number()
+      .default(280)
+      .label("Your hash rate in GigaHashes per second")
+      .required()
+      .positive(),
+    watts: yup
+      .number()
+      .default(150)
+      .label("Your hash rate in GigaHashes per second")
+      .required()
+      .positive(),
+    fiatPerCoinsExchangeRate: yup
+      .number()
+      .default(fiatPerCoinsExchangeRate ? fiatPerCoinsExchangeRate : 100)
+      .label("Fiat Exchange Rate")
+      .required(
+        "Please enter Fiat Exchange Rate (the exchange rate between ZCash and your fiat currency)"
+      ),
+    electricityCostKwh: yup
+      .number()
+      .default(0.11)
+      .label("Electricity Cost")
+  })
+}
+
+let MyPage: any = withRouter((props: MyProps) => {
+  const defaultState = buildFormSchema().default()
+  const [state, setState] = useState<MyState>({
+    ...defaultState,
+    estimateResponse: null
+  })
+
+  const apiRequest = async (state: MyState, path, method?, body?) =>
+    apiRequestLib(props.apiBaseUrl, path, method, body)
+
+  const buildEstimateOptions = async (
+    state: MyState
+  ): Promise<EstimateFutureEarningsOptions> => {
+    NProgress.start()
+    const networkHashesPerSecondPromise = apiRequest(
+      state,
+      "/estimateNetworkHashRate"
+    ).then(json => {
+      NProgress.inc()
+      return new BigNumber(json.value)
+    })
+    const networkHashRateChangePerDay = apiRequest(
+      state,
+      "/estimateNetworkHashRateDailyChange"
+    ).then(json => {
+      NProgress.inc()
+      return new BigNumber(json.value)
+    })
+    const meanNetworkSecondsBetweenBlocksPromise = apiRequest(
+      state,
+      "/meanTimeBetweenBlocks"
+    ).then(json => {
+      NProgress.inc()
+      return json.value
+    })
+
+    Promise.all([
+      networkHashesPerSecondPromise,
+      meanNetworkSecondsBetweenBlocksPromise,
+      networkHashRateChangePerDay
+    ])
+      .then(() => NProgress.done())
+      .catch(() => NProgress.remove())
+
+    const options: EstimateFutureEarningsOptions = {
+      timeHorizonInDays: state.timeHorizonInDays,
+      yourHashesPerSecond: new BigNumber(state.yourHashesPerSecond),
+      networkHashesPerSecond: await networkHashesPerSecondPromise,
+      meanNetworkSecondsBetweenBlocks: await meanNetworkSecondsBetweenBlocksPromise,
+      //fiatPerCoinsExchangeRate: await fiatPerCoinsExchangeRatePromise,
+      fiatPerCoinsExchangeRate: state.fiatPerCoinsExchangeRate,
+      // TODO: fetch (static ok for now)
+      rewardedCoinsPerMinedBlock: 10, // is actually 12.5, but 2.5 is "founder reward"
+      watts: state.watts,
+      electricityCostKwh: state.electricityCostKwh,
+      networkHashRateChangePerDay: await networkHashRateChangePerDay,
+      // TODO: FORM
+      feesAsPercent: 0.0
+    }
+    return options
   }
 
-  componentDidMount = async () => {
-    const json = await this.apiRequest("/fiatRate")
-    this.setState({ fiatPerCoinsExchangeRate: json.value })
-  }
-
-  render = () => {
-    return (
-      <Layout>
-        <h1>Future Earnings</h1>
-        {this.renderForm()}
-        {this.renderChart()}
-      </Layout>
-    )
-  }
-
-  renderForm = () => {
+  const renderForm = (
+    state: MyState,
+    setState: React.Dispatch<React.SetStateAction<MyState>>
+  ) => {
     const formStyle = {
       display: "inline-block",
       verticalAlign: "top"
     }
-    const modelSchema = this.buildFormSchema()
+    const modelSchema = buildFormSchema()
+    const { register, handleSubmit } = useForm()
     return (
-      <Form
+      <form
         style={formStyle}
-        schema={modelSchema}
-        value={this.state}
-        onChange={form => {
-          const values = form.valueOf()
-          this.setState({ ...values })
-        }}
-        onSubmit={this.handleSubmit}
+        onSubmit={handleSubmit(async () => {
+          let estimateOptions = await buildEstimateOptions(state)
+          console.log("estimateOptions:", estimateOptions)
+          let estimateResponse = await apiRequest(
+            state,
+            "/estimateFutureEarnings",
+            "POST",
+            estimateOptions
+          )
+          console.log("/estimateFutureEarnings response:", estimateResponse)
+          setState({
+            ...state,
+            estimateResponse
+          })
+        })}
       >
         <div className="form-group">
           <label>
             Time Horizon
-            <Form.Field name="timeHorizonInDays" className="form-control" />
+            <input
+              name="timeHorizonInDays"
+              className="form-control"
+              ref={register({ required: true, min: 0 })}
+              defaultValue={state.timeHorizonInDays}
+            />
           </label>
-          <Form.Message for="timeHorizonInDays" />
+          <small className="form-text text-muted">
+            Time Horizon for how far out to estimate earnings
+          </small>
         </div>
 
         <div className="form-group">
           <label>
             Your Hashes Per Second
-            <Form.Field name="yourHashesPerSecond" className="form-control" />
+            <input
+              name="yourHashesPerSecond"
+              className="form-control"
+              ref={register({ required: true, min: 0 })}
+              defaultValue={state.yourHashesPerSecond}
+            />
           </label>
-          <Form.Message for="yourHashesPerSecond" />
         </div>
 
         <div className="form-group">
           <label>
             Watts
-            <Form.Field name="watts" className="form-control" />
+            <input
+              name="watts"
+              className="form-control"
+              ref={register({ required: true, min: 0 })}
+              defaultValue={state.watts}
+            />
           </label>
-          <Form.Message for="watts" />
         </div>
 
         <div className="form-group">
           <label>
             Fiat Exchange Rate
-            <Form.Field
+            <input
               name="fiatPerCoinsExchangeRate"
               className="form-control"
+              ref={register({ required: true, min: 0 })}
+              defaultValue={state.fiatPerCoinsExchangeRate}
             />
           </label>
-          <Form.Message for="fiatPerCoinsExchangeRate" />
         </div>
 
         <div className="form-group">
           <label>
             Electricity Cost ($/kWh)
-            <Form.Field
+            <input
               name="electricityCostKwh"
               className="form-control"
-              step={0.01}
+              ref={register({ required: true, min: 0 })}
+              defaultValue={state.electricityCostKwh}
             />
           </label>
-          <Form.Message for="electricityCostKwh" />
         </div>
 
-        <Form.Button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary">
           Submit
-        </Form.Button>
-      </Form>
+        </button>
+      </form>
     )
   }
 
-  renderChart = () => {
+  const renderChart = (state: MyState) => {
     const chartDivStyle = {
       display: "inline-block",
       border: "0px solid red",
@@ -145,14 +249,17 @@ class MyPage extends React.Component<MyProps, MyState> {
           id="chartttt"
           style={chartDivStyle}
           ref={divRef => {
-            this.attachChartNode(divRef)
+            attachChartNode(divRef, state)
           }}
         />
       </React.Fragment>
     )
   }
 
-  attachChartNode = async (parentNode: HTMLDivElement) => {
+  const attachChartNode = async (
+    parentNode: HTMLDivElement,
+    state: MyState
+  ) => {
     if (!parentNode) {
       return
     }
@@ -349,120 +456,22 @@ class MyPage extends React.Component<MyProps, MyState> {
         networkHashesPerSecond: 10
       }
     ]
-    console.log("this.state.estimateResponse:", this.state.estimateResponse)
-    spec.data.values = this.state.estimateResponse
-      ? this.state.estimateResponse
-      : [] //fakeData
+    console.log("state.estimateResponse:", state.estimateResponse)
+    spec.data.values = state.estimateResponse ? state.estimateResponse : [] //fakeData
     const options = {
-      renderer: "svg",
+      renderer: "svg" as Renderers,
       actions: false
     }
     await vegaEmbed(parentNode, spec, options)
   }
 
-  handleSubmit = async () => {
-    let estimateOptions = await this.buildEstimateOptions()
-    console.log("estimateOptions:", estimateOptions)
-    let estimateResponse = await this.apiRequest(
-      "/estimateFutureEarnings",
-      "POST",
-      estimateOptions
-    )
-    console.log("/estimateFutureEarnings response:", estimateResponse)
-    this.setState({
-      estimateResponse
-    })
-  }
+  return (
+    <Layout>
+      <h1>Future Earnings</h1>
+      {renderForm(state, setState)}
+      {renderChart(state)}
+    </Layout>
+  )
+})
 
-  apiRequest = async (path, method?, body?) =>
-    apiRequest(this.props.apiBaseUrl, path, method, body)
-
-  buildEstimateOptions = async (): Promise<EstimateFutureEarningsOptions> => {
-    NProgress.start()
-    const networkHashesPerSecondPromise = this.apiRequest(
-      "/estimateNetworkHashRate"
-    ).then(json => {
-      NProgress.inc()
-      return new BigNumber(json.value)
-    })
-    const networkHashRateChangePerDay = this.apiRequest(
-      "/estimateNetworkHashRateDailyChange"
-    ).then(json => {
-      NProgress.inc()
-      return new BigNumber(json.value)
-    })
-    const meanNetworkSecondsBetweenBlocksPromise = this.apiRequest(
-      "/meanTimeBetweenBlocks"
-    ).then(json => {
-      NProgress.inc()
-      return json.value
-    })
-
-    Promise.all([
-      networkHashesPerSecondPromise,
-      meanNetworkSecondsBetweenBlocksPromise,
-      networkHashRateChangePerDay
-    ])
-      .then(() => NProgress.done())
-      .catch(() => NProgress.remove())
-
-    const options: EstimateFutureEarningsOptions = {
-      timeHorizonInDays: this.state.timeHorizonInDays,
-      yourHashesPerSecond: new BigNumber(this.state.yourHashesPerSecond),
-      networkHashesPerSecond: await networkHashesPerSecondPromise,
-      meanNetworkSecondsBetweenBlocks: await meanNetworkSecondsBetweenBlocksPromise,
-      //fiatPerCoinsExchangeRate: await fiatPerCoinsExchangeRatePromise,
-      fiatPerCoinsExchangeRate: this.state.fiatPerCoinsExchangeRate,
-      // TODO: fetch (static ok for now)
-      rewardedCoinsPerMinedBlock: 10, // is actually 12.5, but 2.5 is "founder reward"
-      watts: this.state.watts,
-      electricityCostKwh: this.state.electricityCostKwh,
-      networkHashRateChangePerDay: await networkHashRateChangePerDay,
-      // TODO: FORM
-      feesAsPercent: 0.0
-    }
-    return options
-  }
-
-  buildFormSchema() {
-    return yup.object({
-      timeHorizonInDays: yup
-        .number()
-        .default(90)
-        .label("Time Horizon for how far out to estimate earnings")
-        .required(
-          "please provide a time horizon for how far out to estimate earnings"
-        )
-        .positive(),
-      yourHashesPerSecond: yup
-        .number()
-        .default(280)
-        .label("Your hash rate in GigaHashes per second")
-        .required()
-        .positive(),
-      watts: yup
-        .number()
-        .default(150)
-        .label("Your hash rate in GigaHashes per second")
-        .required()
-        .positive(),
-      fiatPerCoinsExchangeRate: yup
-        .number()
-        .default(
-          this.state && this.state.fiatPerCoinsExchangeRate
-            ? this.state.fiatPerCoinsExchangeRate
-            : 100
-        )
-        .label("Fiat Exchange Rate")
-        .required(
-          "Please enter Fiat Exchange Rate (the exchange rate between ZCash and your fiat currency)"
-        ),
-      electricityCostKwh: yup
-        .number()
-        .default(0.11)
-        .label("Electricity Cost")
-    })
-  }
-}
-
-export default withRouter<MyProps, MyQuery>(MyPage)
+export default MyPage

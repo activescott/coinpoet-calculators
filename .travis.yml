@@ -2,12 +2,12 @@ language: node_js
 node_js:
   - "node"
   - "10"
-cache: yarn
+cache: npm
 
 script:
   - echo "Running tests against $(node -v) ..."
-  - yarn run lint
-  - yarn run test
+  - npm run -s lint
+  - npm run -s test
 
 env:
   global:

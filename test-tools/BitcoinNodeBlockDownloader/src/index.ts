@@ -1,17 +1,13 @@
 import * as path from "path"
-import * as _fs from "fs"
+import { promises as fs } from "fs"
 import { existsSync, statSync } from "fs"
 import { inspect } from "util"
 import fetch from "node-fetch"
-import Diag from "../../src/lib/Diag"
-import { mkdir, rmdir } from "./fsutil"
+import { createLogger } from "./services"
+import { mkdir } from "./fsutil"
 import * as _ from "lodash"
-import * as program from "commander"
 
-const D = Diag.createLogger("BitcoinNodeBlockDownloader")
-
-// const fs = Bluebird.promisifyAll(_fs)
-const fs = _fs.promises
+const D = createLogger("BitcoinNodeBlockDownloader")
 
 /**
  * Downloads blocks from a Bitcoin full node's JSON-RPC API and saves them to local disk.
@@ -51,10 +47,13 @@ export class BitcoinNodeBlockDownloader {
           blockCount = highestBlockHeight + 1
         }
       }
-      let blocksDownloaded = 0
       D.info("Getting current blockheight")
       let height = highestBlockHeight
       let pendingPromises = []
+      const downloadStart = Date.now()
+      let downloadedBlocks = 0
+      let skippedBlocks = 0
+      // values over 15 seem to trigger a "Work queue depth exceeded". Can be configured when running the node though with -rpc
       const BATCH_SIZE = Math.min(15, blockCount)
       while (highestBlockHeight - height < blockCount) {
         let dest = path.join(this.localDir, `${height}.json`)
@@ -71,6 +70,7 @@ export class BitcoinNodeBlockDownloader {
             })
             .then(header => {
               if (!header) throw new Error("WTF header not there??")
+              downloadedBlocks++
               return this.addIndexFile(header)
             })
             .catch(err => {
@@ -79,6 +79,7 @@ export class BitcoinNodeBlockDownloader {
             })
           pendingPromises.push(headerPromise)
         } else {
+          skippedBlocks++
           console.log(`File ${dest} exists. Skipping...`)
         }
         height--
@@ -98,6 +99,11 @@ export class BitcoinNodeBlockDownloader {
           }*/
         }
       }
+      const downloadEnd = Date.now()
+      const downloadSeconds = (downloadEnd - downloadStart) / 1000
+      console.log(
+        `Downloaded ${downloadedBlocks} blocks in ${downloadSeconds} seconds. Skipped ${skippedBlocks} because they were already downloaded.`
+      )
     } catch (err) {
       console.log("There was an error fetching or writing the block:", err)
       process.exit(20)
@@ -117,6 +123,7 @@ export class BitcoinNodeBlockDownloader {
         headers: {
           "content-type": "text/plain",
           Authorization:
+            // FIXME: make user/pw options!
             "Basic " + Buffer.from("activescott:123456").toString("base64")
         },
         method: "POST"
@@ -125,7 +132,10 @@ export class BitcoinNodeBlockDownloader {
     } catch (err) {
       let msg = `Error fetching RPC method ${method} with args ${inspect(
         params
-      )}. Result was: ${rpcResultStr}`
+      )}.
+      Result was: ${rpcResultStr}
+      Exception was: ${err}
+      `
       console.error(msg)
       throw new Error(msg)
     }
@@ -136,7 +146,7 @@ export class BitcoinNodeBlockDownloader {
       throw new Error(
         `Error parsing JSON result for RPC method ${method} with args ${inspect(
           params
-        )}. Result was: ${rpcResultStr}`
+        )}. The result before attempting parsing was: '${rpcResultStr}'`
       )
     }
     // console.debug(`rpcRequest ${method} (${inspect(params)}):`, parsed)
@@ -233,55 +243,4 @@ export class BitcoinNodeBlockDownloader {
     }
     return json
   }
-}
-
-if (require.main === module) {
-  // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
-  let defaultDataPath = path.join(
-    path.dirname(module.filename),
-    "../../test-data/zcash-blocks"
-  )
-
-  program
-    .command("download")
-    .option(
-      "-d, --dir [dir]",
-      "Directory to download blocks to.",
-      defaultDataPath
-    )
-    .option(
-      "-n, --node [http url]",
-      "The http path to the rpc endpoint on the Bitcoin Node.",
-      "http://localhost:32771"
-    )
-    .option(
-      "-b, --blockheight [blockheight]",
-      "Maximum/highest block to start downloading from. By default the height of the full nodes blockchain.",
-      parseInt,
-      0
-    )
-    .option(
-      "-c, --count [count]",
-      "The number of blocks to download (starting at the max/highest block)",
-      parseInt,
-      0
-    )
-    .option("--clean", "Delete the existing files")
-    .action(cmd => {
-      // console.log('cmd:', cmd)
-      console.log("\ndownload:")
-      for (let option of ["dir", "node", "blockheight", "count", "clean"]) {
-        console.log(` ${option}:`, cmd[option])
-      }
-      console.log("")
-
-      if (cmd.clean) {
-        rmdir(cmd.dir)
-      }
-      let downloader = new BitcoinNodeBlockDownloader(cmd.dir, cmd.node)
-      downloader
-        .download(cmd.blockheight, cmd.count)
-        .then(() => console.log("download finished!"))
-    })
-  program.parse(process.argv)
 }

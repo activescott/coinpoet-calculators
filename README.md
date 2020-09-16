@@ -30,8 +30,8 @@ Stable. Will use semver for breaking changes.
 The main code for the CLI example is in [/demo/cli/index.ts](demo/cli/index.ts). To run the command line interface example take the following steps. First, [build the package](#compiling). Next, build the example command line interface example:
 
     cd demo/cli
-    yarn # to install dependencies
-    yarn start
+    npm i # to install dependencies
+    npm start
 
 Then follow the prompts and it will give you the requested info.
 
@@ -40,8 +40,8 @@ Then follow the prompts and it will give you the requested info.
 A more sophisticated example of how the library can be used in a web application is at `/demo/web/`. The main code using the package in this example is at and [/demo/web/api/index.ts](demo/web/api/index.ts). To build this example take the following steps. First, [build the package](#compiling). Next, execute the following commands from the root of the repo:
 
     cd demo/web
-    yarn # to install dependencies
-    yarn dev
+    npm i # to install dependencies
+    npm run -s dev
 
 # Todo / Roadmap
 
@@ -51,7 +51,7 @@ see [/docs/todo.md](docs/todo.md)
 
 The package is written in TypeScript. To build the package run the following from the root of the repo:
 
-    yarn build # It will be built in /dist
+    npm run -s build # It will be built in /dist
 
 # Release Process
 
