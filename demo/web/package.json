@@ -23,7 +23,7 @@
     "sw-precache-webpack-plugin": "^1.0.0",
     "typescript": "latest",
     "typescript-babel-jest": "^1.0.6",
-    "vega": "^5.15.0",
+    "vega": "^5.17.3",
     "vega-embed": "^6.12.2",
     "vega-lite": "^4.15.0",
     "webpack": "^4.44.1",
