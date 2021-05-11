@@ -13,7 +13,7 @@
   "dependencies": {
     "@activescott/diag-winston": "^1.0.1",
     "commander": "^6.1.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
