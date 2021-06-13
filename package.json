@@ -40,7 +40,7 @@
     "bignumber.js": "^8.0.2",
     "bluebird": "^3.5.1",
     "cross-fetch": "^2.1.0",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.21",
     "loglevel-debug": "^0.0.1",
     "typescript": "^4.0.2"
   },
